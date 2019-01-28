@@ -40,14 +40,14 @@ def render_lane(color_img, ploty, left_fit, right_fit, param):
     left_pts = np.vstack((left_fitx+0.5,ploty)).astype(np.int32).T
     
     # right lane
-    right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
-    right_pts = np.vstack((right_fitx+0.5,ploty)).astype(np.int32).T
-    cv2.polylines(warp_zero,  [left_pts, right_pts],  False,  (255, 0, 0),  50) 
+    reversed_ploty = ploty[range(len(ploty)-1, -1, -1)]
+    right_fitx = right_fit[0]*reversed_ploty**2 + right_fit[1]*reversed_ploty + right_fit[2]
+    right_pts = np.vstack((right_fitx+0.5,reversed_ploty)).astype(np.int32).T
+    #cv2.polylines(warp_zero,  [left_pts, right_pts],  False,  (255, 0, 0),  50) 
+    cv2.fillPoly(warp_zero, [np.vstack((left_pts, right_pts))], (0, 255, 0))
     
     back_warped = cv2.warpPerspective(warp_zero, param.inv_warp_mtx, (param.img_col, param.img_row))
-    plt.imshow(back_warped)
-    plt.show()
-        
+    
     # Combine the result with the original image
     result = cv2.addWeighted(color_img, 0.8, back_warped, 1.0, 0)
     
