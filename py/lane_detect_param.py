@@ -13,7 +13,8 @@ class LaneDetectParam:
     def __init__(self, debug=False, chessbd_corners_nx=9, chessbd_corners_ny=6, 
                  sobel_kernel_size=9, sobel_gradx_thresh=(20, 100), sobel_grady_thresh=(0, 255),
                  sobel_mag_thresh=(20, 100), sobel_dir_thresh=(0.7, 1.3),
-                 s_channel_thresh=(180, 255), s_channel_lb = 40):
+                 s_channel_thresh=(180, 255), s_channel_lb = 40, 
+                 conv_window_width=50, conv_window_height=80, conv_margin=100):
         
         self.debug = debug
         
@@ -31,6 +32,7 @@ class LaneDetectParam:
         self.chessbd_corners_ny = chessbd_corners_ny
         self.calib_mtx = None
         self.calib_dist = None
+        self.warp_mtx = None
         
         # binarization based on gradient
         self.sobel_kernel_size = sobel_kernel_size
@@ -43,26 +45,31 @@ class LaneDetectParam:
         self.s_channel_thresh = s_channel_thresh
         self.s_channel_lb = s_channel_lb
         
+        # for convolution
+        self.conv_window_width = conv_window_width
+        self.conv_window_height = conv_window_height
+        self.conv_margin = conv_margin
         
-    def load(self, path=''):
-        if len(path) > 0:
-            self.param_path = path
-            
+        self.load_calib_param()
+        
+    def load_calib_param(self):     
+        if not os.path.exists(self.param_path):
+            return
+        
         fd = open(self.param_path, 'rb')
-        param = pickle.load(fd)
+        self.calib_mtx = pickle.load(fd)
+        self.calib_dist = pickle.load(fd)
+        self.warp_mtx = pickle.load(fd)
         fd.close()
-        return param
         
-        
-    def save(self, path=''):
+    def save_calib_param(self, path=''):
         if len(path) > 0:
             self.param_path = path
             
         fd = open(self.param_path, 'wb')
-        pickle.dump(self, fd)
+        pickle.dump(self.calib_mtx, fd)
+        pickle.dump(self.calib_dist, fd)
+        pickle.dump(self.warp_mtx, fd)
         fd.close()
         
-def load_param(path=''):
-    param = LaneDetectParam()
-    return param.load(path)
-    
+        
