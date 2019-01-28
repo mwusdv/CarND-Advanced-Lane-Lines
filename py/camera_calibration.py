@@ -82,7 +82,7 @@ def camera_calibration():
     # parameters for perspective transformation
     param = compute_perpective_transform_param(param)
     
-    param.save()
+    param.save_calib_param()
     
     return param
 
