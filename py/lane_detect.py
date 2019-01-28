@@ -61,7 +61,7 @@ def lane_detect(img, param):
     binary_img = binary_thresholding(undist_img, param)
     
     #perspective transformation to get eh birde-eye view
-    birds_eye_img = cv2.warpPerspective(binary_img, param.warp_mtx, (param.img_col, param.img_col))
+    birds_eye_img = cv2.warpPerspective(binary_img, param.warp_mtx, (param.img_col, param.img_row))
     
     # detect lane pixels and fit to find the lane
     #lane_img = lane_fit(birds_eye_img, param)
