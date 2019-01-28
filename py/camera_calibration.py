@@ -67,8 +67,10 @@ def compute_perpective_transform_param(param):
     
     #transform matrix
     M = cv2.getPerspectiveTransform(src, dst)
+    invM = cv2.getPerspectiveTransform(dst, src)
         
     param.warp_mtx = M
+    param.inv_warp_mtx = invM
     
     return param
 

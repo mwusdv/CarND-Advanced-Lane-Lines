@@ -89,6 +89,28 @@ def find_lane_pixels(binary_warped, param):
     return leftx, lefty, rightx, righty, out_img
 
 
+def build_lange_img(binary_warped, ploty, left_fit,right_fit, param):
+    # draw lanes 
+    lane_img =  np.zeros_like(binary_warped, dtype=np.uint8)
+    lane_img = np.dstack((lane_img, lane_img, lane_img))
+    
+    left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
+    right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+    
+    py = np.array(ploty, dtype=np.int32)
+    lx = np.array(left_fitx + 0.5, dtype=np.int32)
+    left_pts = np.vstack([lx, py]).T
+    
+    rx = np.array(right_fitx + 0.5, dtype=np.int32)
+    right_pts = np.vstack([rx, py]).T
+    
+    # draw two lines
+    #pts = np.vstack([left_pts, right_pts])
+    #cv2.fillPoly(lane_img, pts, color=[0, 255, 0])   
+    cv2.polylines(lane_img, [left_pts, right_pts], False, color='yellow', thickness=2)   
+    return lane_img
+
+    
 def fit_polynomial(binary_warped, param):
     # Find our lane pixels first
     leftx, lefty, rightx, righty, out_img = find_lane_pixels(binary_warped, param)
@@ -129,8 +151,8 @@ def fit_polynomial(binary_warped, param):
         right_pts = np.vstack([rx, py]).T
         color = (255, 255, 0)
         thickness = 2
-        cv2.polylines(out_img, [left_pts, right_pts], False, color, thickness)    
+        cv2.polylines(out_img, [left_pts, right_pts], False, color, thickness)   
     
+    #lane_img = build_lange_img(binary_warped, ploty, left_fit,right_fit, param)
+        
     return left_fit, right_fit, left_fit_real, right_fit_real, ploty, out_img
-
-    
