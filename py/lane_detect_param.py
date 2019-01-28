@@ -13,7 +13,7 @@ class LaneDetectParam:
     def __init__(self, debug=False, chessbd_corners_nx=9, chessbd_corners_ny=6, 
                  sobel_kernel_size=9, sobel_gradx_thresh=(20, 100), sobel_grady_thresh=(0, 255),
                  sobel_mag_thresh=(20, 100), sobel_dir_thresh=(0.7, 1.3),
-                 s_channel_thresh=(90, 255)):
+                 s_channel_thresh=(180, 255)):
         
         self.debug = debug
         

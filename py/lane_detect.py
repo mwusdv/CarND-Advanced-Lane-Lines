@@ -60,8 +60,8 @@ def lane_detect(img, param):
     # binary thresholding based on gradient and color
     binary_img = binary_thresholding(undist_img, param)
     
-    # perspective transformation to get eh birde-eye view
-    #birds_eye_img = perspective_transform(binary_img, param)
+    #perspective transformation to get eh birde-eye view
+    birds_eye_img = cv2.warpPerspective(binary_img, param.warp_mtx, (param.img_col, param.img_col))
     
     # detect lane pixels and fit to find the lane
     #lane_img = lane_fit(birds_eye_img, param)
@@ -72,7 +72,7 @@ def lane_detect(img, param):
     # wapr the detected lane boundaries back onto the original image
     #lane_img_warp_back = warp_back(lane_img, curvature, position, param)
     
-    return undist_img, binary_img
+    return undist_img, binary_img, birds_eye_img
 
 # test lane detection on the images in the given path
 def test_lane_detect(input_path):
@@ -91,7 +91,7 @@ def test_lane_detect(input_path):
         file_name = fname.split('/')[-1].split('.')[0].strip()
         
         # lane detection and intermediate results
-        undist_img, binary_img = lane_detect(img, param)
+        undist_img, binary_img, birds_eye_img = lane_detect(img, param)
         
         # save results
         undist_fname = os.path.join(result_path, 'undist_' + file_name + '.jpg')
@@ -99,6 +99,10 @@ def test_lane_detect(input_path):
         
         bin_fname = os.path.join(result_path, 'bin_' + file_name + '.jpg')
         cv2.imwrite(bin_fname, binary_img*255)
+        
+        birds_fname = os.path.join(result_path, 'birds_' + file_name + '.jpg')
+        cv2.imwrite(birds_fname, birds_eye_img*255)
+        
         
 def lane_detect0(image, path, result_path, param):
     img = mpimg.imread(fname)
