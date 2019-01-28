@@ -11,7 +11,7 @@ import matplotlib.image as mpimg
 import numpy as np
 import cv2
 import glob
-from lane_detect_param import load_param
+from lane_detect_param import LaneDetectParam
 
 def abs_sobel_thresh(gray, orient, param):
     # Calculate directional gradient
@@ -127,7 +127,7 @@ def test_binary_thresholding(input_path, param):
 
         
 if __name__ == '__main__':
-    param = load_param()
+    param = LaneDetectParam()
     input_path = 'test_images'
     test_binary_thresholding(input_path, param)
 

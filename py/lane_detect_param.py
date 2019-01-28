@@ -13,8 +13,9 @@ class LaneDetectParam:
     def __init__(self, debug=False, chessbd_corners_nx=9, chessbd_corners_ny=6, 
                  sobel_kernel_size=9, sobel_gradx_thresh=(20, 100), sobel_grady_thresh=(0, 255),
                  sobel_mag_thresh=(20, 100), sobel_dir_thresh=(0.7, 1.3),
-                 s_channel_thresh=(180, 255), s_channel_lb = 40, 
-                 conv_window_width=50, conv_window_height=80, conv_margin=100):
+                 s_channel_thresh=(180, 255), s_channel_lb = 10, 
+                 conv_window_width=50, conv_window_height=80, conv_margin=100, 
+                 hist_nwindows=9, hist_margin=100, hist_minpix=50):
         
         self.debug = debug
         
@@ -49,6 +50,11 @@ class LaneDetectParam:
         self.conv_window_width = conv_window_width
         self.conv_window_height = conv_window_height
         self.conv_margin = conv_margin
+        
+        # lane fit based on histogram
+        self.hist_nwindows = hist_nwindows
+        self.hist_margin = hist_margin
+        self.hist_minpix = hist_minpix
         
         self.load_calib_param()
         
