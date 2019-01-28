@@ -15,7 +15,8 @@ class LaneDetectParam:
                  sobel_mag_thresh=(20, 100), sobel_dir_thresh=(0.7, 1.3),
                  s_channel_thresh=(180, 255), s_channel_lb = 10, 
                  conv_window_width=50, conv_window_height=80, conv_margin=100, 
-                 hist_nwindows=9, hist_margin=100, hist_minpix=50):
+                 hist_nwindows=9, hist_margin=100, hist_minpix=50,
+                 ym_per_pix=30/720, xm_per_pix=3.7/700):
         
         self.debug = debug
         
@@ -56,6 +57,11 @@ class LaneDetectParam:
         self.hist_margin = hist_margin
         self.hist_minpix = hist_minpix
         
+        # meters per pixel in y and x dimension
+        self.ym_per_pix = ym_per_pix 
+        self.xm_per_pix = xm_per_pix
+        
+    
         self.load_calib_param()
         
     def load_calib_param(self):     

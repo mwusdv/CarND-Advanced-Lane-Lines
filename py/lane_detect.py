@@ -19,35 +19,10 @@ from binary_thresh import binary_thresholding
 
 from lane_find_conv import lane_find_conv
 from lane_find_hist import fit_polynomial
-#from lane_find_hist import *
+from measure_curvature import measure_curvature_real
 
-#def lane_detect(img, param):
-    # distortion correction
-#    undist = cv2.undistort(img, param.mtx, param.dist, None, param.mtx)
-    
-    # binary thresholding based on HLS and gradient
-#    binary_img = hls_gradient_select(undist, param)
-    
-    # warp
-
-def get_interest_region_vertices(img, param):
-    row, col = img.shape[:2]
-    mid = col//2
- 
-    # height of the interest region
-    height = int(row * param.ir_row_ratio)
-    
-    # length of the upper and lower horizontal edges
-    upper_edge_length = int(col * param.ir_upper_col_ratio)
-    lower_edge_length = int(col * param.ir_lower_col_ratio)
-    offset = (col - lower_edge_length) // 2
-    
-    # trapezoid, (row, col)
-    vertices = np.array([[offset, row-1], [col-1-offset, row-1], \
-                          [mid+upper_edge_length/2, row-height], [mid-upper_edge_length/2, row-height]], dtype=np.float32)
-    
-    
-    return vertices
+def compute_vehicle_pos(ploty, left_fit, right_fit, param):
+    pass
 
 
 # lane detection pipeline
@@ -67,11 +42,11 @@ def lane_detect(img, param):
     warped_img = cv2.warpPerspective(binary_img, param.warp_mtx, (param.img_col, param.img_row))
     
     # detect lane pixels and fit to find the lane
-    poly_fit_img, ploty, left_fitx, right_fitx = fit_polynomial(warped_img, param)
+    left_fit, right_fit, left_fit_real, right_fit_real, ploty, poly_fit_img = fit_polynomial(warped_img, param)
 
-    
+    left_curverad, right_curverad = measure_curvature_real(ploty, left_fit_real, right_fit_real, param)
+
     #lane_find_conv(warped_img, param)
-    #lane_img = lane_fit(birds_eye_img, param)
     
     # compute curvature and vheicle position with repsecto to center
     #curvature, position = cure_pos(lane_img, param)
@@ -79,7 +54,7 @@ def lane_detect(img, param):
     # wapr the detected lane boundaries back onto the original image
     #lane_img_warp_back = warp_back(lane_img, curvature, position, param)
     
-    return undist_img, binary_img, warped_img, poly_fit_img
+    return undist_img, binary_img, warped_img, poly_fit_img, left_curverad, right_curverad
 
 # test lane detection on the images in the given path
 def test_lane_detect(input_path):
@@ -100,7 +75,7 @@ def test_lane_detect(input_path):
         
         # lane detection and intermediate results
         print(file_name)
-        undist_img, binary_img, warped_img, poly_fit_img = lane_detect(img, param)
+        undist_img, binary_img, warped_img, poly_fit_img, left_curverad, right_curverad = lane_detect(img, param)
         
         # save results
         undist_fname = os.path.join(result_path, 'undist_' + file_name)
@@ -114,6 +89,8 @@ def test_lane_detect(input_path):
         
         fit_fname = os.path.join(result_path, 'fit_' + file_name)
         mpimg.imsave(fit_fname, poly_fit_img)
+        
+        print('curvature radius=', np.mean([left_curverad, right_curverad]))
 
 if __name__ == '__main__':
     path = 'test_images'

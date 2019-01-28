@@ -97,20 +97,24 @@ def fit_polynomial(binary_warped, param):
     left_fit = np.polyfit(lefty, leftx, 2)
     right_fit = np.polyfit(righty, rightx, 2)
 
+    left_fit_real = np.polyfit(lefty*param.ym_per_pix, leftx*param.xm_per_pix, 2)
+    right_fit_real = np.polyfit(righty*param.ym_per_pix, rightx*param.xm_per_pix, 2)
+   
     # Generate x and y values for plotting
     ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0] )
-    try:
-        left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
-        right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
-    except TypeError:
-        # Avoids an error if `left` and `right_fit` are still none or incorrect
-        print('The function failed to fit a line!')
-        left_fitx = 1*ploty**2 + 1*ploty
-        right_fitx = 1*ploty**2 + 1*ploty
-
+   
     ## Visualization ##
     # Colors in the left and right lane regions
     if param.debug:
+        try:
+            left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
+            right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+        except TypeError:
+            # Avoids an error if `left` and `right_fit` are still none or incorrect
+            print('The function failed to fit a line!')
+            left_fitx = 1*ploty**2 + 1*ploty
+            right_fitx = 1*ploty**2 + 1*ploty
+        
         out_img[lefty, leftx] = [255, 0, 0]
         out_img[righty, rightx] = [0, 0, 255]
 
@@ -126,6 +130,7 @@ def fit_polynomial(binary_warped, param):
         color = (255, 255, 0)
         thickness = 2
         cv2.polylines(out_img, [left_pts, right_pts], False, color, thickness)    
-    return out_img, ploty, left_fitx, right_fitx
+    
+    return left_fit, right_fit, left_fit_real, right_fit_real, ploty, out_img
 
     
