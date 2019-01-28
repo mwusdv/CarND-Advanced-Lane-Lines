@@ -88,7 +88,10 @@ def hls_s_select(img, param):
     binary_output = np.zeros_like(s_channel)
     binary_output[(s_channel > param.s_channel_thresh[0]) & (s_channel <= param.s_channel_thresh[1])] = 1
     
-    return binary_output
+    hls_mask = np.zeros_like(s_channel)
+    hls_mask[s_channel > param.s_channel_lb] = 1
+    
+    return binary_output, hls_mask
 
     
 # binary thresholding based on both color and gradient
@@ -98,11 +101,11 @@ def binary_thresholding(img, param):
     bin_sobel = sobel_binarization(gray, param)
     
     # binaray thresholding based on HLS
-    bin_hls = hls_s_select(img, param)
+    bin_hls, hls_mask = hls_s_select(img, param)
     
     # combination
     binary_output = np.zeros_like(bin_sobel)
-    binary_output[(bin_sobel == 1) | (bin_hls == 1)] = 1
+    binary_output[(((bin_sobel == 1) | (bin_hls == 1)) & (hls_mask == 1))] = 1
     return binary_output
 
 def test_binary_thresholding(input_path, param):
