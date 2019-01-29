@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 
+from moviepy.editor import VideoFileClip
+
 from lane_detect_param import LaneDetectParam
 
 #from  camera_calibration import *
@@ -144,6 +146,26 @@ def test_lane_detect(input_path):
         mpimg.imsave(lane_fname, lane_img)
 
 
+ld_param = LaneDetectParam()
+ld_param.debug = False
+# for video processing
+def process_image(img):
+    undist_img, binary_img, warped_img, poly_fit_img, lane_img, left_curverad, right_curverad, offset = lane_detect(img, ld_param)
+    return lane_img
+
+def process_video(input_video, output_video):
+    clip = VideoFileClip(input_video)
+    #clip = VideoFileClip(input_video).subclip(0, 5)
+    white_clip = clip.fl_image(process_image)
+    white_clip.write_videofile(output_video, audio=False)
+    
+def test_video(input_video):
+    path = input_video.split('/')
+    path[-1] = 'ld_' + path[-1]
+    output_video = '/'.join(path)
+    process_video(input_video, output_video)
+    
 if __name__ == '__main__':
-    path = 'test_images'
-    test_lane_detect(path)
+    #path = 'test_images'
+    #test_lane_detect(path)
+    test_video('../challenge_video.mp4')
