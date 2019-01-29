@@ -8,12 +8,7 @@ from lane_detect_param import LaneDetectParam
 def find_lane_pixels(binary_warped, param):
     # Take a histogram of the bottom half of the image
     histogram = np.sum(binary_warped[binary_warped.shape[0]//2:,:], axis=0)
-    
-    # Create an output image to draw on and visualize the result
-    out_img = []
-    if param.debug:
-        out_img = np.dstack((binary_warped, binary_warped, binary_warped))
-    
+     
     # Find the peak of the left and right halves of the histogram
     # These will be the starting point for the left and right lines
     midpoint = np.int(histogram.shape[0]//2)
@@ -48,11 +43,11 @@ def find_lane_pixels(binary_warped, param):
         win_xright_high = rightx_current+ param.hist_margin
         
         # Draw the windows on the visualization image
-        if param.debug:
-            cv2.rectangle(out_img,(win_xleft_low,win_y_low),
-            (win_xleft_high,win_y_high),(0,255,0), 2) 
-            cv2.rectangle(out_img,(win_xright_low,win_y_low),
-            (win_xright_high,win_y_high),(0,255,0), 2) 
+        #if param.debug:
+        #    cv2.rectangle(out_img,(win_xleft_low,win_y_low),
+        #    (win_xleft_high,win_y_high),(0,255,0), 2) 
+        #    cv2.rectangle(out_img,(win_xright_low,win_y_low),
+        #    (win_xright_high,win_y_high),(0,255,0), 2) 
             
         # Identify the nonzero pixels in x and y within the window 
         good_left_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & 
@@ -86,12 +81,12 @@ def find_lane_pixels(binary_warped, param):
     rightx = nonzerox[right_lane_inds]
     righty = nonzeroy[right_lane_inds]
 
-    return leftx, lefty, rightx, righty, out_img
+    return leftx, lefty, rightx, righty
 
     
 def fit_polynomial(binary_warped, param):
     # Find our lane pixels first
-    leftx, lefty, rightx, righty, out_img = find_lane_pixels(binary_warped, param)
+    leftx, lefty, rightx, righty = find_lane_pixels(binary_warped, param)
 
     #Fit a second order polynomial
     left_fit = np.polyfit(lefty, leftx, 2)
@@ -105,7 +100,10 @@ def fit_polynomial(binary_warped, param):
    
     ## Visualization ##
     # Colors in the left and right lane regions
+    fit_img = None
     if param.debug:
+        # Create an output image to draw on and visualize the result
+        fit_img = np.dstack((binary_warped, binary_warped, binary_warped))
         try:
             left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
             right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
@@ -115,8 +113,8 @@ def fit_polynomial(binary_warped, param):
             left_fitx = 1*ploty**2 + 1*ploty
             right_fitx = 1*ploty**2 + 1*ploty
         
-        out_img[lefty, leftx] = [255, 0, 0]
-        out_img[righty, rightx] = [0, 0, 255]
+        fit_img[lefty, leftx] = [255, 0, 0]
+        fit_img[righty, rightx] = [0, 0, 255]
 
         # Plots the left and right polynomials on the lane lines
         #plt.plot(left_fitx, ploty, color='yellow')
@@ -127,8 +125,6 @@ def fit_polynomial(binary_warped, param):
         
         rx = np.array(right_fitx + 0.5, dtype=np.int32)
         right_pts = np.vstack([rx, py]).T
-        color = (255, 255, 0)
-        thickness = 2
-        cv2.polylines(out_img, [left_pts, right_pts], False, color, thickness)   
+        cv2.polylines(fit_img, [left_pts, right_pts], False,  param.poly_line_color,  param.poly_line_thickness)   
         
-    return left_fit, right_fit, left_fit_real, right_fit_real, ploty, out_img
+    return left_fit, right_fit, left_fit_real, right_fit_real, ploty, fit_img

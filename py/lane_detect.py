@@ -31,7 +31,8 @@ def compute_vehicle_pos(ploty, left_fit, right_fit, param):
     
     return offset
 
-def render_lane(color_img, ploty, left_fit, right_fit, param):
+
+def render_lane(color_img, ploty, left_fit, right_fit, curverad, offset, param):
     # Create an image to draw the lines on
     warp_zero = np.zeros_like(color_img, dtype=np.uint8)
 
@@ -44,12 +45,25 @@ def render_lane(color_img, ploty, left_fit, right_fit, param):
     right_fitx = right_fit[0]*reversed_ploty**2 + right_fit[1]*reversed_ploty + right_fit[2]
     right_pts = np.vstack((right_fitx+0.5,reversed_ploty)).astype(np.int32).T
     #cv2.polylines(warp_zero,  [left_pts, right_pts],  False,  (255, 0, 0),  50) 
-    cv2.fillPoly(warp_zero, [np.vstack((left_pts, right_pts))], (0, 255, 0))
     
+    # draw left and right lanes
+    cv2.polylines(warp_zero, [left_pts], False, param.left_lane_color, param.draw_lane_thickness)
+    cv2.polylines(warp_zero, [right_pts], False, param.right_lane_color, param.draw_lane_thickness)
+    
+    # fill thelane rgion
+    cv2.fillPoly(warp_zero, [np.vstack((left_pts, right_pts))], param.lane_region_color)
+    
+    # warp back to the original image
     back_warped = cv2.warpPerspective(warp_zero, param.inv_warp_mtx, (param.img_col, param.img_row))
-    
-    # Combine the result with the original image
     result = cv2.addWeighted(color_img, 0.8, back_warped, 1.0, 0)
+    
+    # show curvature
+    text = 'Radius of Curvature = ' + '{:.2f}'.format(curverad) + ' (m)'
+    cv2.putText(result, text, (20, 25), fontFace=1, fontScale=2, color=(255,255,255))
+    
+    offset_str = 'left' if offset < 0 else 'right'
+    text = 'Vheicle is ' + '{:.2f}'.format(abs(offset)) + ' m ' + offset_str + ' of center'
+    cv2.putText(result, text, (20, 50), fontFace=1, fontScale=2, color=(255,255,255))
     
     return result 
 
@@ -78,7 +92,8 @@ def lane_detect(img, param):
     
     left_curverad, right_curverad = measure_curvature_real(ploty, left_fit_real, right_fit_real, param)
 
-    lane_img = render_lane(img, ploty, left_fit, right_fit, param)
+    curverad = (left_curverad + right_curverad)/2
+    lane_img = render_lane(img, ploty, left_fit, right_fit, curverad, offset, param)
     #lane_find_conv(warped_img, param)
     
     # compute curvature and vheicle position with repsecto to center

@@ -63,6 +63,15 @@ class LaneDetectParam:
         self.ym_per_pix = ym_per_pix 
         self.xm_per_pix = xm_per_pix
         
+        # poly line drawing
+        self.poly_line_color = (255, 255, 0)
+        self.poly_line_thickness = 2
+        
+        # draw lane and lane region
+        self.left_lane_color = (255, 0, 0)
+        self.right_lane_color = (0, 0, 255)
+        self.draw_lane_thickness = 20
+        self.lane_region_color = (0, 255, 0)
     
         self.load_calib_param()
         
