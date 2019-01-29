@@ -6,6 +6,7 @@ Created on Tue Jan 22 23:13:11 2019
 @author: mingrui
 """
 
+import cv2
 import os.path
 import pickle
 
@@ -73,6 +74,13 @@ class LaneDetectParam:
         self.draw_lane_thickness = 20
         self.lane_region_color = (0, 255, 0)
     
+        # text on the lane image
+        self.first_line_pos = (300, 25)
+        self.line_gap = 30
+        self.text_color = (255, 255, 255)
+        self.font_face = cv2.FONT_HERSHEY_SIMPLEX
+        self.font_scale = 1
+        
         self.load_calib_param()
         
     def load_calib_param(self):     

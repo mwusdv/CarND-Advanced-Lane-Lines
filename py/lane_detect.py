@@ -59,11 +59,13 @@ def render_lane(color_img, ploty, left_fit, right_fit, curverad, offset, param):
     
     # show curvature
     text = 'Radius of Curvature = ' + '{:.2f}'.format(curverad) + ' (m)'
-    cv2.putText(result, text, (20, 25), fontFace=1, fontScale=2, color=(255,255,255))
+    text_pos= param.first_line_pos
+    cv2.putText(result, text, text_pos, param.font_face, param.font_scale, param.text_color)
     
     offset_str = 'left' if offset < 0 else 'right'
     text = 'Vheicle is ' + '{:.2f}'.format(abs(offset)) + ' m ' + offset_str + ' of center'
-    cv2.putText(result, text, (20, 50), fontFace=1, fontScale=2, color=(255,255,255))
+    text_pos = (text_pos[0], text_pos[1] + param.line_gap)
+    cv2.putText(result, text, text_pos, param.font_face, param.font_scale, param.text_color)
     
     return result 
 
