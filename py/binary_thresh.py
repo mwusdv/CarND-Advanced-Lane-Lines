@@ -12,6 +12,7 @@ import numpy as np
 import cv2
 import glob
 from lane_detect_param import LaneDetectParam
+import matplotlib.pyplot as plt
 
 def abs_sobel_thresh(gray, orient, param):
     # Calculate directional gradient
@@ -93,9 +94,39 @@ def hls_s_select(img, param):
     
     return binary_output, hls_mask
 
+# detect white areas
+def detect_white(image, param):
+    rgb_flag = (image[:,:,0] > param.white_rgb_threshold[0]) \
+             & (image[:,:,1] > param.white_rgb_threshold[1]) \
+             & (image[:,:,2] > param.white_rgb_threshold[2]) 
+    rgb_mask = np.zeros(image.shape[:2], dtype=np.uint8)
+    rgb_mask[rgb_flag] = 1
     
+    
+    return rgb_mask
+
+# detect yellow areas
+def detect_yellow(image, param):
+    hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+    mask = cv2.inRange(hsv, param.yellow_hsv_lb, param.yellow_hsv_ub)
+    yellow_mask = np.zeros(image.shape[:2], dtype=np.uint8)
+    yellow_mask[mask > 0] = 1
+    return yellow_mask
+    
+# mask of interest region based on colors
+def get_color_mask(image, param):
+    mask_white = detect_white(image, param)
+    mask_yellow = detect_yellow(image, param)
+    
+    mask = np.zeros(image.shape[:2], dtype=np.uint8)
+    mask[((mask_white == 1) | (mask_yellow==1))] = 1
+
+    return mask
+
 # binary thresholding based on both color and gradient
 def binary_thresholding(img, param):
+    color_mask = get_color_mask(img, param)
+    
     # binary thresholding based on gradient
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     bin_sobel = sobel_binarization(gray, param)
@@ -105,7 +136,7 @@ def binary_thresholding(img, param):
     
     # combination
     binary_output = np.zeros_like(bin_sobel)
-    binary_output[(((bin_sobel == 1) | (bin_hls == 1)) & (hls_mask == 1))] = 1
+    binary_output[(((bin_sobel == 1) | (bin_hls == 1)) & (hls_mask == 1) & (color_mask==1))] = 1
     return binary_output
 
 def test_binary_thresholding(input_path, param):

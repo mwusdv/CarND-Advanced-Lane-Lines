@@ -72,6 +72,10 @@ def render_lane(color_img, ploty, left_fit, right_fit, curverad, offset, param):
     return result 
 
 
+def fit_gap_small(fit1, fit2, param):
+    gap = abs(fit1 - fit2)
+    return np.max(gap) < param.fit_gap_ub
+        
 # lane detection pipeline
 def lane_detect(img, param):
     # param already contains the pre-computed camersa 
@@ -90,7 +94,31 @@ def lane_detect(img, param):
     
     # detect lane pixels and fit to find the lane
     left_fit, right_fit, left_fit_real, right_fit_real, ploty, poly_fit_img = fit_polynomial(warped_img, param)
-
+    if left_fit is None:
+        left_fit = param.left_fit
+        right_fit = param.right_fit
+        left_fit_real = param.left_fit_real
+        right_fit_real = param.right_fit_real
+    elif param.record_fit:
+        if param.left_fit is not None:
+            if fit_gap_small(param.left_fit, left_fit, param):
+                param.left_fit = param.left_fit*param.fit_momentum + left_fit*(1-param.fit_momentum)
+                param.left_fit_real = param.left_fit_real*param.fit_momentum + left_fit_real*(1-param.fit_momentum)
+            if fit_gap_small(param.right_fit, right_fit, param):
+                param.right_fit = param.right_fit*param.fit_momentum + right_fit*(1-param.fit_momentum)
+                param.right_fit_real = param.right_fit_real*param.fit_momentum + right_fit_real*(1-param.fit_momentum)
+                
+        else:
+            param.left_fit = left_fit
+            param.right_fit = right_fit
+            param.left_fit_real = left_fit_real
+            param.right_fit_real = right_fit_real
+            
+    left_fit = param.left_fit
+    right_fit = param.right_fit
+    left_fit_real= param.left_fit_real
+    right_fit_real = param.right_fit_real
+    
     # vehcile offset with respect to the center
     offset = compute_vehicle_pos(ploty, left_fit, right_fit, param)
     
@@ -113,6 +141,7 @@ def test_lane_detect(input_path):
     # load parameters
     param = LaneDetectParam()
     param.debug = True
+    param.record_fit = True
     
     # input and result paths
     input_path = os.path.join(param.root_path, input_path)
@@ -121,7 +150,14 @@ def test_lane_detect(input_path):
         os.mkdir(result_path)
         
     images = glob.glob(os.path.join(input_path, '*.jpg'))
+    images.sort()
     for fname in images:
+        #if fname.split('/')[-1] != 'frame_1047.jpg' and fname.split('/')[-1] != 'frame_1046.jpg':
+        #    continue
+        
+        if fname.split('/')[-1] == 'frame_1001.jpg' :
+            pp = 1
+            
         img = mpimg.imread(fname)    
         file_name = fname.split('/')[-1].split('.')[0].strip() + '.jpg'
         
@@ -139,8 +175,9 @@ def test_lane_detect(input_path):
         warp_fname = os.path.join(result_path, 'warp_' + file_name)
         cv2.imwrite(warp_fname, warped_img*255)
         
-        fit_fname = os.path.join(result_path, 'fit_' + file_name)
-        mpimg.imsave(fit_fname, poly_fit_img)
+        if poly_fit_img is not None:
+            fit_fname = os.path.join(result_path, 'fit_' + file_name)
+            mpimg.imsave(fit_fname, poly_fit_img)
         
         lane_fname = os.path.join(result_path, 'lane_' + file_name)
         mpimg.imsave(lane_fname, lane_img)
@@ -148,6 +185,8 @@ def test_lane_detect(input_path):
 
 ld_param = LaneDetectParam()
 ld_param.debug = False
+ld_param.record_fit = True
+
 # for video processing
 def process_image(img):
     undist_img, binary_img, warped_img, poly_fit_img, lane_img, left_curverad, right_curverad, offset = lane_detect(img, ld_param)
@@ -155,7 +194,7 @@ def process_image(img):
 
 def process_video(input_video, output_video):
     clip = VideoFileClip(input_video)
-    #clip = VideoFileClip(input_video).subclip(0, 5)
+    #clip = VideoFileClip(input_video).subclip(0, 3)
     white_clip = clip.fl_image(process_image)
     white_clip.write_videofile(output_video, audio=False)
     
@@ -165,7 +204,15 @@ def test_video(input_video):
     output_video = '/'.join(path)
     process_video(input_video, output_video)
     
+def save_frames(input_video, T1, T2):
+    N = (T2-T1)*20
+    clip1 = VideoFileClip(input_video).subclip(T1, T2)
+    for t in range(N):
+        clip1.save_frame('../frames/frame_' + str(1000+t) + '.jpg', t=(T2-T1)*t/N)
+
+
 if __name__ == '__main__':
-    #path = 'test_images'
+    path = 'frames'
     #test_lane_detect(path)
-    test_video('../challenge_video.mp4')
+    test_video('../project_video.mp4')
+    #save_frames('../challenge_video.mp4', 0, 5)

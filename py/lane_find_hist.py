@@ -44,10 +44,11 @@ def find_lane_pixels(binary_warped, param):
         
         # Draw the windows on the visualization image
         #if param.debug:
-        #    cv2.rectangle(out_img,(win_xleft_low,win_y_low),
+        #    cv2.rectangle(fit_img,(win_xleft_low,win_y_low),
         #    (win_xleft_high,win_y_high),(0,255,0), 2) 
-        #    cv2.rectangle(out_img,(win_xright_low,win_y_low),
-        #    (win_xright_high,win_y_high),(0,255,0), 2) 
+            
+       #     cv2.rectangle(fit_img,(win_xright_low,win_y_low),
+       #     (win_xright_high,win_y_high),(0,255,0), 2) 
             
         # Identify the nonzero pixels in x and y within the window 
         good_left_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & 
@@ -83,30 +84,70 @@ def find_lane_pixels(binary_warped, param):
 
     return leftx, lefty, rightx, righty
 
+
+def polyx(y, poly_fit):
+    return poly_fit[0] * y**2 + poly_fit[1] * y + poly_fit[2]
+
+def search_around_poly(binary_warped, param):
+    # Choose the width of the margin around the previous polynomial to search
+    # The quiz grader expects 100 here, but feel free to tune on your own!
+    
+
+    # Grab activated pixels
+    nonzero = binary_warped.nonzero()
+    nonzeroy = np.array(nonzero[0])
+    nonzerox = np.array(nonzero[1])
+    
+    ### TO-DO: Set the area of search based on activated x-values ###
+    ### within the +/- margin of our polynomial function ###
+    ### Hint: consider the window areas for the similarly named variables ###
+    ### in the previous quiz, but change the windows to our new search area ###
+    leftx = polyx(nonzeroy, param.left_fit)
+    left_lane_inds = ((nonzerox > leftx-param.hist_margin) & (nonzerox < leftx+param.hist_margin))
+    
+    rightx = polyx(nonzeroy, param.right_fit)
+    right_lane_inds = ((nonzerox > rightx-param.hist_margin) & (nonzerox < rightx+param.hist_margin))
+    
+    # Again, extract left and right line pixel positions
+    leftx = nonzerox[left_lane_inds]
+    lefty = nonzeroy[left_lane_inds] 
+    rightx = nonzerox[right_lane_inds]
+    righty = nonzeroy[right_lane_inds]
+   
+    return leftx, lefty, rightx, righty
+
     
 def fit_polynomial(binary_warped, param):
     # Find our lane pixels first
-    leftx, lefty, rightx, righty = find_lane_pixels(binary_warped, param)
+    if param.left_fit is not None and param.right_fit is not None:
+        leftx, lefty, rightx, righty = search_around_poly(binary_warped, param)
+    else:
+        leftx, lefty, rightx, righty = find_lane_pixels(binary_warped, param)
 
+    # Generate x and y values for plotting
+    ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0] )
+    
     #Fit a second order polynomial
+    if len(leftx) == 0 or len(rightx) == 0:
+        return None, None, None, None, ploty, None
+    
     left_fit = np.polyfit(lefty, leftx, 2)
     right_fit = np.polyfit(righty, rightx, 2)
 
     left_fit_real = np.polyfit(lefty*param.ym_per_pix, leftx*param.xm_per_pix, 2)
     right_fit_real = np.polyfit(righty*param.ym_per_pix, rightx*param.xm_per_pix, 2)
    
-    # Generate x and y values for plotting
-    ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0] )
+  
    
     ## Visualization ##
     # Colors in the left and right lane regions
-    fit_img = None
+    fit_img = np.dstack((binary_warped, binary_warped, binary_warped))
     if param.debug:
         # Create an output image to draw on and visualize the result
-        fit_img = np.dstack((binary_warped, binary_warped, binary_warped))
+        #fit_img = np.dstack((binary_warped, binary_warped, binary_warped))
         try:
-            left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
-            right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+            left_fitx = polyx(ploty, left_fit)
+            right_fitx = polyx(ploty, right_fit)
         except TypeError:
             # Avoids an error if `left` and `right_fit` are still none or incorrect
             print('The function failed to fit a line!')
