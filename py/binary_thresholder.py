@@ -118,7 +118,7 @@ class BinaryThresholder:
         
         # combination
         binary_output = np.zeros_like(sobel_binary)
-        binary_output[((sobel_binary == 1) | (s_binary == 1))] = 1
+        binary_output[((sobel_binary == 1) | (s_binary == 1)) & (self._s_channel > self._param.s_channel_lb)] = 1
                        
         return binary_output
 

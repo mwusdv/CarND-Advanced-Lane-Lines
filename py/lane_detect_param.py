@@ -40,7 +40,7 @@ class LaneDetectParam:
         
         # binary thresholding based on s-channel
         self.s_channel_thresh = (100, 255)
-        self.s_channel_lb = 15
+        self.s_channel_lb = 5
         
         # for convolution
         self.conv_window_width = 50

@@ -152,12 +152,20 @@ class PolyFitter:
             self.find_lane_pixels(binary_warped)
             
         #Fit a second order polynomial
-        left_fit = np.polyfit(self._lefty, self._leftx, 2)
-        right_fit = np.polyfit(self._righty, self._rightx, 2)
+        if len(self._lefty) > 3:
+            left_fit = np.polyfit(self._lefty, self._leftx, 2)
+            left_fit_real = np.polyfit(self._lefty*self._param.ym_per_pix, self._leftx*self._param.xm_per_pix, 2)
+        else:
+            left_fit = self._left_fit
+            left_fit_real = self._left_fit_real
+            
+        if len(self._righty) > 3:
+            right_fit = np.polyfit(self._righty, self._rightx, 2)
+            right_fit_real = np.polyfit(self._righty*self._param.ym_per_pix, self._rightx*self._param.xm_per_pix, 2)
+        else:
+            right_fit = self._right_fit
+            right_fit_real = self._right_fit_real
     
-        left_fit_real = np.polyfit(self._lefty*self._param.ym_per_pix, self._leftx*self._param.xm_per_pix, 2)
-        right_fit_real = np.polyfit(self._righty*self._param.ym_per_pix, self._rightx*self._param.xm_per_pix, 2)
-       
         # Fuse newly estimated poly with the existing one 
         self.update_fit(left_fit, right_fit, left_fit_real, right_fit_real)
         

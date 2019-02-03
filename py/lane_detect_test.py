@@ -91,5 +91,5 @@ def save_frames(input_video, T1, T2):
 if __name__ == '__main__':
     path = 'frames'
     #test_lane_detect(path)
-    test_video('../project_video.mp4')
+    test_video('../challenge_video.mp4')
     #save_frames('../project_video.mp4', 32, 45)
