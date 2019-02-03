@@ -11,16 +11,8 @@ import os.path
 import pickle
 
 class LaneDetectParam:
-    def __init__(self, debug=False, chessbd_corners_nx=9, chessbd_corners_ny=6, 
-                 img_row=720, img_col=1280,
-                 sobel_kernel_size=9, sobel_gradx_thresh=(20, 100), sobel_grady_thresh=(0, 255),
-                 sobel_mag_thresh=(20, 100), sobel_dir_thresh=(0.7, 1.3),
-                 s_channel_thresh=(180, 255), s_channel_lb = 15, 
-                 conv_window_width=50, conv_window_height=80, conv_margin=100, 
-                 hist_nwindows=9, hist_margin=100, hist_minpix=50,
-                 ym_per_pix=30/720, xm_per_pix=3.7/700):
-        
-        self.debug = debug
+    def __init__(self):
+        self.debug = False
         
         # directories
         self.root_path = '/home/mingrui/Mingrui/udacity/self-driving/CarND-Advanced-Lane-Lines/'
@@ -28,41 +20,41 @@ class LaneDetectParam:
         self.camera_cal_path = os.path.join(self.root_path, 'camera_cal/')
         
         # image size
-        self.img_row = img_row
-        self.img_col = img_col
+        self.img_row = 720
+        self.img_col = 1280
         
         # number of chessboard corners for camera calibration
-        self.chessbd_corners_nx = chessbd_corners_nx
-        self.chessbd_corners_ny = chessbd_corners_ny
+        self.chessbd_corners_nx = 9
+        self.chessbd_corners_ny = 6
         self.calib_mtx = None
         self.calib_dist = None
         self.warp_mtx = None
         self.inv_warp_mtx = None
         
         # binarization based on gradient
-        self.sobel_kernel_size = sobel_kernel_size
-        self.sobel_gradx_thresh = sobel_gradx_thresh
-        self.sobel_grady_thresh = sobel_grady_thresh
-        self.sobel_mag_thresh = sobel_mag_thresh
-        self.sobel_dir_thresh = sobel_dir_thresh
+        self.sobel_kernel_size = 9
+        self.sobel_gradx_thresh = (20, 100)
+        self.sobel_grady_thresh = (0, 255)
+        self.sobel_mag_thresh = (20, 100)
+        self.sobel_dir_thresh = (0.7, 1.3)
         
         # binary thresholding based on s-channel
-        self.s_channel_thresh = s_channel_thresh
-        self.s_channel_lb = s_channel_lb
+        self.s_channel_thresh = (180, 255)
+        self.s_channel_lb = 15
         
         # for convolution
-        self.conv_window_width = conv_window_width
-        self.conv_window_height = conv_window_height
-        self.conv_margin = conv_margin
+        self.conv_window_width = 50
+        self.conv_window_height = 80
+        self.conv_margin = 100
         
         # lane fit based on histogram
-        self.hist_nwindows = hist_nwindows
-        self.hist_margin = hist_margin
-        self.hist_minpix = hist_minpix
+        self.hist_nwindows = 9
+        self.hist_margin = 100
+        self.hist_minpix = 50
         
         # meters per pixel in y and x dimension
-        self.ym_per_pix = ym_per_pix 
-        self.xm_per_pix = xm_per_pix
+        self.ym_per_pix = 30/720 
+        self.xm_per_pix = 3.7/700
         
         # poly line drawing
         self.poly_line_color = (255, 255, 0)
