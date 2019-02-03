@@ -60,7 +60,7 @@ class LaneDetectParam:
         self.poly_line_color = (255, 255, 0)
         self.poly_line_thickness = 2
         
-        self.fit_momentum = 0
+        self.fit_momentum = 0.5
         self.fit_gap_ub = 50
         
         # draw lane and lane region

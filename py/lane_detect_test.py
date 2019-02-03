@@ -19,7 +19,7 @@ from lane_detector import LaneDetector
 def test_lane_detect(input_path):
     # load parameters
     param = LaneDetectParam()
-    param.debug = True
+    param.debug = False
     
     ld = LaneDetector(param)
     
@@ -37,21 +37,29 @@ def test_lane_detect(input_path):
         
         # lane detection and intermediate results
         print(file_name)
-        undist_img, binary_img, warped_img, poly_fit_img, lane_img = ld.lane_detect(img)
-        
+        if param.debug:
+            undist_img, binary_img, warped_img, poly_fit_img, lane_img = ld.lane_detect(img)
+        else:
+            lane_img = ld.lane_detect(img)
+            undist_img = None
+            binary_img = None
+            warped_img = None
+            poly_fit_img = None
+            
         # save results
-        undist_fname = os.path.join(result_path, 'undist_' + file_name)
-        mpimg.imsave(undist_fname, undist_img)
-        
-        bin_fname = os.path.join(result_path, 'bin_' + file_name)
-        cv2.imwrite(bin_fname, binary_img*255)
-        
-        warp_fname = os.path.join(result_path, 'warp_' + file_name)
-        cv2.imwrite(warp_fname, warped_img*255)
-        
-        if poly_fit_img is not None:
-            fit_fname = os.path.join(result_path, 'fit_' + file_name)
-            mpimg.imsave(fit_fname, poly_fit_img)
+        if param.debug:
+            undist_fname = os.path.join(result_path, 'undist_' + file_name)
+            mpimg.imsave(undist_fname, undist_img)
+            
+            bin_fname = os.path.join(result_path, 'bin_' + file_name)
+            cv2.imwrite(bin_fname, binary_img*255)
+            
+            warp_fname = os.path.join(result_path, 'warp_' + file_name)
+            cv2.imwrite(warp_fname, warped_img*255)
+            
+            if poly_fit_img is not None:
+                fit_fname = os.path.join(result_path, 'fit_' + file_name)
+                mpimg.imsave(fit_fname, poly_fit_img)
         
         lane_fname = os.path.join(result_path, 'lane_' + file_name)
         mpimg.imsave(lane_fname, lane_img)
@@ -62,8 +70,8 @@ def process_video(input_video, output_video):
     param.debug = False
     ld = LaneDetector(param)
     
-    #clip = VideoFileClip(input_video)
-    clip = VideoFileClip(input_video).subclip(32, 45)
+    clip = VideoFileClip(input_video)
+    #clip = VideoFileClip(input_video).subclip(32, 45)
     white_clip = clip.fl_image(ld.lane_detect)
     white_clip.write_videofile(output_video, audio=False)
     
@@ -84,4 +92,4 @@ if __name__ == '__main__':
     path = 'frames'
     #test_lane_detect(path)
     test_video('../project_video.mp4')
-    #save_frames('../challenge_video.mp4', 0, 5)
+    #save_frames('../project_video.mp4', 32, 45)
