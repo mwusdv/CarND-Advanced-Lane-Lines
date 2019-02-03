@@ -34,12 +34,12 @@ class LaneDetectParam:
         # binarization based on gradient
         self.sobel_kernel_size = 9
         self.sobel_gradx_thresh = (20, 100)
-        self.sobel_grady_thresh = (0, 255)
+        self.sobel_grady_thresh = (20, 100)
         self.sobel_mag_thresh = (20, 100)
         self.sobel_dir_thresh = (0.7, 1.3)
         
         # binary thresholding based on s-channel
-        self.s_channel_thresh = (180, 255)
+        self.s_channel_thresh = (100, 255)
         self.s_channel_lb = 15
         
         # for convolution
@@ -60,6 +60,9 @@ class LaneDetectParam:
         self.poly_line_color = (255, 255, 0)
         self.poly_line_thickness = 2
         
+        self.fit_momentum = 0
+        self.fit_gap_ub = 50
+        
         # draw lane and lane region
         self.left_lane_color = (255, 0, 0)
         self.right_lane_color = (0, 0, 255)
@@ -72,6 +75,7 @@ class LaneDetectParam:
         self.text_color = (255, 255, 255)
         self.font_face = cv2.FONT_HERSHEY_SIMPLEX
         self.font_scale = 1
+        
         
         self.load_calib_param()
         

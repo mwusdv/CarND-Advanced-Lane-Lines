@@ -1,10 +1,13 @@
 import numpy as np
-import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
 import cv2
 
-from lane_detect_param import LaneDetectParam
+def compute_curvature(poly2_fit, y):
+    a, b, c = poly2_fit
+    curvature = (1+(2*a*y+b)**2)**1.5/2/np.abs(a)
+    return curvature
 
+def polyx(y, poly_fit):
+    return poly_fit[0] * y**2 + poly_fit[1] * y + poly_fit[2]
 
 class PolyFitter:
     def __init__(self, param):
@@ -23,6 +26,10 @@ class PolyFitter:
         self._rightx = None
         self._righty = None
         
+        self._fit_img = None
+        self._ploty = None
+        
+    # Tind possible lane pixels
     def find_lane_pixels(self, binary_warped):
         # Take a histogram of the bottom half of the image
         histogram = np.sum(binary_warped[binary_warped.shape[0]//2:,:], axis=0)
@@ -95,100 +102,100 @@ class PolyFitter:
         self._rightx = nonzerox[right_lane_inds]
         self._righty = nonzeroy[right_lane_inds]
         
+    # Find possible lane pixels around poly curves
     def search_around_poly(self, binary_warped):
         # Grab activated pixels
         nonzero = binary_warped.nonzero()
         nonzeroy = np.array(nonzero[0])
         nonzerox = np.array(nonzero[1])
         
-        #Set the area of search based on activated x-values
-        leftx = polyx(nonzeroy, left_fit)
-        left_lane_inds = ((nonzerox > leftx-margin) & (nonzerox < leftx+margin))
+        # Set the area of search based on activated x-values
+        leftx = polyx(nonzeroy, self._left_fit)
+        left_lane_inds = ((nonzerox > leftx-self._param.hist_margin) & (nonzerox < leftx+self._param.hist_margin))
         
-        rightx = polyx(nonzeroy, right_fit)
-        right_lane_inds = ((nonzerox > rightx-margin) & (nonzerox < rightx+margin))
+        rightx = polyx(nonzeroy, self._right_fit)
+        right_lane_inds = ((nonzerox > rightx-self._param.hist_margin) & (nonzerox < rightx+self._param.hist_margin))
         
-        # Again, extract left and right line pixel positions
-        leftx = nonzerox[left_lane_inds]
-        lefty = nonzeroy[left_lane_inds] 
-        rightx = nonzerox[right_lane_inds]
-        righty = nonzeroy[right_lane_inds]
+        # Extract left and right line pixel positions
+        self._leftx = nonzerox[left_lane_inds]
+        self._lefty = nonzeroy[left_lane_inds] 
+        self._rightx = nonzerox[right_lane_inds]
+        self._righty = nonzeroy[right_lane_inds]
+   
+    def fit_gap_small(self, fit1, fit2):
+        gap = abs(fit1 - fit2)
+        return np.max(gap) < self._param.fit_gap_ub
     
-        # Fit new polynomials
-        left_fitx, right_fitx, ploty = fit_poly(binary_warped.shape, leftx, lefty, rightx, righty)
-        
-        ## Visualization ##
-        # Create an image to draw on and an image to show the selection window
-        out_img = np.dstack((binary_warped, binary_warped, binary_warped))*255
-        window_img = np.zeros_like(out_img)
-        # Color in left and right line pixels
-        out_img[nonzeroy[left_lane_inds], nonzerox[left_lane_inds]] = [255, 0, 0]
-        out_img[nonzeroy[right_lane_inds], nonzerox[right_lane_inds]] = [0, 0, 255]
-    
-        # Generate a polygon to illustrate the search window area
-        # And recast the x and y points into usable format for cv2.fillPoly()
-        left_line_window1 = np.array([np.transpose(np.vstack([left_fitx-margin, ploty]))])
-        left_line_window2 = np.array([np.flipud(np.transpose(np.vstack([left_fitx+margin, 
-                                  ploty])))])
-        left_line_pts = np.hstack((left_line_window1, left_line_window2))
-        right_line_window1 = np.array([np.transpose(np.vstack([right_fitx-margin, ploty]))])
-        right_line_window2 = np.array([np.flipud(np.transpose(np.vstack([right_fitx+margin, 
-                                  ploty])))])
-        right_line_pts = np.hstack((right_line_window1, right_line_window2))
-    
-        # Draw the lane onto the warped blank image
-        cv2.fillPoly(window_img, np.int_([left_line_pts]), (0,255, 0))
-        cv2.fillPoly(window_img, np.int_([right_line_pts]), (0,255, 0))
-        result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
-        
-        # Plot the polynomial lines onto the image
-        plt.plot(left_fitx, ploty, color='yellow')
-        plt.plot(right_fitx, ploty, color='yellow')
-        ## End visualization steps ##
-        
-        return result
-
-    def fit_polynomial(binary_warped):
+    # Fuse newly estimated poly with the existing one 
+    def update_fit(self, left_fit, right_fit, left_fit_real, right_fit_real):
+        if self._left_fit is not None:
+            if self.fit_gap_small(left_fit, self._left_fit):
+                self._left_fit = self._left_fit*self._param.fit_momentum + left_fit*(1-self._param.fit_momentum)
+                self._left_fit_real = self._left_fit_real*self._param.fit_momentum + left_fit_real*(1-self._param.fit_momentum)
+            
+            if self.fit_gap_small(right_fit, self._right_fit):
+                self._right_fit = self._right_fit*self._param.fit_momentum + right_fit*(1-self._param.fit_momentum)
+                self._right_fit_real = self._right_fit_real*self._param.fit_momentum + right_fit_real*(1-self._param.fit_momentum)
+                
+        else:
+            self._left_fit = left_fit
+            self._right_fit = right_fit
+            self._left_fit_real = left_fit_real
+            self._right_fit_real = right_fit_real
+            
+    # Fit poly curve given the possible lane pixels
+    def fit_polynomial(self, binary_warped):
         # Find our lane pixels first
-        leftx, lefty, rightx, righty = find_lane_pixels(binary_warped, self._param)
-    
+        if self._left_fit is not None:
+            self.search_around_poly(binary_warped)
+        else:
+            self.find_lane_pixels(binary_warped)
+            
         #Fit a second order polynomial
-        left_fit = np.polyfit(lefty, leftx, 2)
-        right_fit = np.polyfit(righty, rightx, 2)
+        left_fit = np.polyfit(self._lefty, self._leftx, 2)
+        right_fit = np.polyfit(self._righty, self._rightx, 2)
     
-        left_fit_real = np.polyfit(lefty*self._param.ym_per_pix, leftx*self._param.xm_per_pix, 2)
-        right_fit_real = np.polyfit(righty*self._param.ym_per_pix, rightx*self._param.xm_per_pix, 2)
+        left_fit_real = np.polyfit(self._lefty*self._param.ym_per_pix, self._leftx*self._param.xm_per_pix, 2)
+        right_fit_real = np.polyfit(self._righty*self._param.ym_per_pix, self._rightx*self._param.xm_per_pix, 2)
        
+        # Fuse newly estimated poly with the existing one 
+        self.update_fit(left_fit, right_fit, left_fit_real, right_fit_real)
+        
         # Generate x and y values for plotting
-        ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0] )
+        self._ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0] )
        
-        ## Visualization ##
-        # Colors in the left and right lane regions
-        fit_img = None
+        # points on the fitted curves    
+        self._left_fitx = self._left_fit[0]*self._ploty**2 + self._left_fit[1]*self._ploty + self._left_fit[2]
+        self._right_fitx = self._right_fit[0]*self._ploty**2 + self._right_fit[1]*self._ploty + self._right_fit[2]      
+     
+        py = np.array(self._ploty, dtype=np.int32)  
+        
+        lx = np.array(self._left_fitx + 0.5, dtype=np.int32) # add 0.5 in order to cast to integer more accurately
+        self._left_pts = np.vstack([lx, py]).T  
+        
+        rx = np.array(self._right_fitx + 0.5, dtype=np.int32)
+        self._right_pts = np.vstack([rx, py]).T
+        
+        # Create an output image to draw on and visualize the result
         if self._param.debug:
-            # Create an output image to draw on and visualize the result
-            fit_img = np.dstack((binary_warped, binary_warped, binary_warped))
-            try:
-                left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
-                right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
-            except TypeError:
-                # Avoids an error if `left` and `right_fit` are still none or incorrect
-                print('The function failed to fit a line!')
-                left_fitx = 1*ploty**2 + 1*ploty
-                right_fitx = 1*ploty**2 + 1*ploty
-            
-            fit_img[lefty, leftx] = [255, 0, 0]
-            fit_img[righty, rightx] = [0, 0, 255]
-    
-            # Plots the left and right polynomials on the lane lines
-            #plt.plot(left_fitx, ploty, color='yellow')
-            #plt.plot(right_fitx, ploty, color='yellow')
-            py = np.array(ploty, dtype=np.int32)
-            lx = np.array(left_fitx + 0.5, dtype=np.int32)
-            left_pts = np.vstack([lx, py]).T
-            
-            rx = np.array(right_fitx + 0.5, dtype=np.int32)
-            right_pts = np.vstack([rx, py]).T
-            cv2.polylines(fit_img, [left_pts, right_pts], False,  self._param.poly_line_color,  self._param.poly_line_thickness)   
-            
-        return left_fit, right_fit, left_fit_real, right_fit_real, ploty, fit_img
+            self._fit_img = np.dstack((binary_warped, binary_warped, binary_warped))
+            self._fit_img[self._lefty, self._leftx] = [255, 0, 0]
+            self._fit_img[self._righty, self._rightx] = [0, 0, 255]
+            cv2.polylines(self._fit_img, [self._left_pts, self._right_pts], False,  self._param.poly_line_color,  self._param.poly_line_thickness)   
+        
+        # compute curvature
+        self.measure_curvature_real()
+        
+        return self._fit_img
+        
+        
+    # Calculates the curvature of polynomial functions in meters.          
+    def measure_curvature_real(self):
+        # Define y-value where we want radius of curvature
+        # We'll choose the maximum y-value, corresponding to the bottom of the image
+        y_eval = np.max(self._ploty)
+        
+        # calculation of R_curve (radius of curvature)
+        self._left_curverad = compute_curvature(self._left_fit, y_eval*self._param.ym_per_pix)
+        self._right_curverad = compute_curvature(self._right_fit, y_eval*self._param.ym_per_pix)
+         

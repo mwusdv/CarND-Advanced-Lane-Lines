@@ -35,7 +35,7 @@ class BinaryThresholder:
         self._s_channel = hls[:,:,2]
          
     # thresholding based on directional gradient
-    def abs_sobel_thresh(orient):
+    def abs_sobel_thresh(self, orient):
         # Calculate directional gradient
         if orient == 'x':
             abs_sobel = self._abs_sx
@@ -82,10 +82,10 @@ class BinaryThresholder:
         grady = self.abs_sobel_thresh('y')
         
         # based on magnitude
-        mag_binary = self.mag_thresh(gray, param)
+        mag_binary = self.mag_thresh()
         
         # based on gradient direction
-        dir_binary = self.dir_threshold(gray, param)
+        dir_binary = self.dir_threshold()
     
         # combine all the results
         sobel_binary = np.zeros_like(dir_binary)
@@ -107,18 +107,18 @@ class BinaryThresholder:
     def binary_thresholding(self, img):
         # preparations 
         gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-        self.compue_sobel(gray)
+        self.compute_sobel(gray)
         self.s_space(img)
         
         # thresholding based on gradient and color
-        sobel_binary = sobel_binarization(gray)
+        sobel_binary = self.sobel_binarization()
         
         # binaray thresholding based on HLS
-        bin_hls, hls_mask = hls_s_select(img)
+        s_binary = self.hls_s_select()
         
         # combination
-        binary_output = np.zeros_like(bin_sobel)
-        binary_output[((bin_sobel == 1) | (bin_hls == 1))] = 1
+        binary_output = np.zeros_like(sobel_binary)
+        binary_output[((sobel_binary == 1) | (s_binary == 1))] = 1
                        
         return binary_output
 
