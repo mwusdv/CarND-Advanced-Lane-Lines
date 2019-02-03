@@ -49,7 +49,7 @@ class LaneDetectParam:
         
         # lane fit based on histogram
         self.hist_nwindows = 9
-        self.hist_margin = 100
+        self.hist_margin = 50
         self.hist_minpix = 50
         
         # meters per pixel in y and x dimension
@@ -60,8 +60,8 @@ class LaneDetectParam:
         self.poly_line_color = (255, 255, 0)
         self.poly_line_thickness = 2
         
-        self.fit_momentum = 0.5
-        self.fit_gap_ub = 50
+        self.fit_momentum = 0.3
+        self.fit_gap_ub = 100
         
         # draw lane and lane region
         self.left_lane_color = (255, 0, 0)

@@ -19,7 +19,7 @@ from lane_detector import LaneDetector
 def test_lane_detect(input_path):
     # load parameters
     param = LaneDetectParam()
-    param.debug = False
+    param.debug = True
     
     ld = LaneDetector(param)
     
@@ -92,4 +92,4 @@ if __name__ == '__main__':
     path = 'frames'
     #test_lane_detect(path)
     test_video('../challenge_video.mp4')
-    #save_frames('../project_video.mp4', 32, 45)
+    #save_frames('../challenge_video.mp4', 0, 8)
