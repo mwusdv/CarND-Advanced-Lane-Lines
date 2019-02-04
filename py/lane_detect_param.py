@@ -12,24 +12,8 @@ import pickle
 import numpy as np
 
 class LaneDetectParam:
-<<<<<<< HEAD
-    def __init__(self, debug=False, chessbd_corners_nx=9, chessbd_corners_ny=6, 
-                 img_row=720, img_col=1280,
-                 sobel_kernel_size=9, sobel_gradx_thresh=(20, 200), sobel_grady_thresh=(0, 255),
-                 sobel_mag_thresh=(20, 100), sobel_dir_thresh=(0.7, 1.3),
-                 s_channel_thresh=(50, 255), s_channel_lb = 0, 
-                 white_rgb_threshold = np.array([0, 0, 0]), 
-                 yellow_hsv_lb = np.array([15, 100, 180]),
-                 yellow_hsv_ub = np.array([40, 255, 255]),
-                 conv_window_width=50, conv_window_height=80, conv_margin=100, 
-                 hist_nwindows=9, hist_margin=100, hist_minpix=50,
-                 ym_per_pix=30/720, xm_per_pix=3.7/700):
-        
-        self.debug = debug
-=======
     def __init__(self):
         self.debug = False
->>>>>>> robust
         
         # directories
         self.root_path = '/home/mingrui/Mingrui/udacity/self-driving/CarND-Advanced-Lane-Lines/'
@@ -98,19 +82,7 @@ class LaneDetectParam:
         self.text_color = (255, 255, 255)
         self.font_face = cv2.FONT_HERSHEY_SIMPLEX
         self.font_scale = 1
-        
-<<<<<<< HEAD
-        # record poly fit for lanes
-        self.fit_gap_ub = 1e-3
-        self.fit_momentum = 0.1 # to smooth the poly fit parameters
-        self.record_fit = False  # true is for dealing with a sequence of frames
-        self.left_fit = None
-        self.right_fit = None
-        self.left_fit_real = None
-        self.right_fit_real = None
-=======
->>>>>>> robust
-        
+                
         self.load_calib_param()
         
     def load_calib_param(self):     
