@@ -118,8 +118,13 @@ class BinaryThresholder:
         
         # combination
         binary_output = np.zeros_like(sobel_binary)
-        binary_output[((sobel_binary == 1) | (s_binary == 1)) & (self._s_channel > self._param.s_channel_lb)] = 1
+        binary_output[((sobel_binary == 1) | (s_binary == 1)) \
+                      & (self._s_channel > self._param.s_channel_lb)] = 1
                        
+        N = binary_output.shape[0] * binary_output.shape[1]
+        if np.sum(binary_output) / N > 0.4:
+            binary_output[(np.max(img, axis=2) <= self._param.rgb_max_lb)] = 0
+            
         return binary_output
 
 def test_binary_thresholding(input_path, param):
