@@ -68,6 +68,7 @@ def test_lane_detect(input_path):
 def process_video(input_video, output_video):
     param = LaneDetectParam()
     param.debug = False
+    param.consider_prev = True
     ld = LaneDetector(param)
     
     clip = VideoFileClip(input_video)
@@ -89,7 +90,7 @@ def save_frames(input_video, T1, T2):
 
 
 if __name__ == '__main__':
-    path = 'frames'
+    path = 'test_images'
     test_lane_detect(path)
     #test_video('../harder_challenge_video.mp4')
     #save_frames('../harder_challenge_video.mp4', 0, 4)

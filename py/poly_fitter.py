@@ -128,7 +128,7 @@ class PolyFitter:
     
     # Fuse newly estimated poly with the existing one 
     def update_fit(self, left_fit, right_fit, left_fit_real, right_fit_real):
-        if self._left_fit is not None:
+        if self._left_fit is not None and self._param.consider_prev:
             if self.fit_gap_small(left_fit, self._left_fit):
                 self._left_fit = self._left_fit*self._param.fit_momentum + left_fit*(1-self._param.fit_momentum)
                 self._left_fit_real = self._left_fit_real*self._param.fit_momentum + left_fit_real*(1-self._param.fit_momentum)
@@ -146,7 +146,7 @@ class PolyFitter:
     # Fit poly curve given the possible lane pixels
     def fit_polynomial(self, binary_warped):
         # Find our lane pixels first
-        if self._left_fit is not None:
+        if self._left_fit is not None and self._param.consider_prev:
             self.search_around_poly(binary_warped)
         else:
             self.find_lane_pixels(binary_warped)

@@ -64,6 +64,10 @@ class LaneDetectParam:
         self.fit_momentum = 0.3
         self.fit_gap_ub = 100
         
+        # whether considering the previous curve
+        # this is for video processing
+        self.consider_prev = False
+        
         # draw lane and lane region
         self.left_lane_color = (255, 0, 0)
         self.right_lane_color = (0, 0, 255)
