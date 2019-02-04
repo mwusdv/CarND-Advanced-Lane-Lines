@@ -6,7 +6,7 @@
 
 \usepackage[lofdepth,lotdepth]{subfig}
 
-\title{Lane Detecion Project}
+\title{Advanced Lane Detecion Project}
 \author{Mingrui Wu}
 \date{}
 
@@ -16,34 +16,35 @@
 
 
 \section{Camera Calibration}
-The colde for this step is in py/camera\_calibration.py. Camera clibaration is done by following the materials taught in the class. Twenty chess board images are provided in the camera\_cal folder. 
+The colde for this step is in py/camera\_calibration.py. Camera calibration is done by following the materials taught in the class. Twenty chess board images are provided in the camera\_cal folder. 
 \begin{enumerate}
 	\item For each image, find the inner corners by $cv2.findChessboardCorners$. For this function the number of corners in x and y direstions are 9 and 6 respectively.
-	\item Append the corners found in the previous step to an array $imgpoints$, at the same time append pre-calculated mesh grid points to another array $objp$
-	\item Having scanned all the twenty images, apply $cv2.calibrateCamera$ to calcuate the calibration paramters
+	\item Append the corners found in the previous step to an array $imgpoints$, at the same time append pre-calculated mesh grid points to another array $objp$.
+	\item Having scanned all the twenty images, apply $cv2.calibrateCamera$ to calcuate the calibration paramters.
 	\item For each of the twenty images, apply $cv2.undistort$ to correction the distortion, where the calibration parameters needed by this function are computed in the last step.
 \end{enumerate}
 	 
-An example of camera calibration is given in image \ref{camera_calib}. The two images in the left column are the inpute images, while the two in the right column are the images after distortion correction.
+An example of camera calibration is given in image \ref{fig:camera_calib}. The two images on the left column are the inpute images, while the two on the right column are the images after distortion correction.
 
 \begin{figure}[h]
 \centering
 \subfloat[input image]{
 \includegraphics[width=0.4\textwidth]{calibration1.jpg}
-\label{fig:input}}
+}
 \qquad
 \subfloat[undistorted image]{
 \includegraphics[width=0.4\textwidth]{undist_calibration1.jpg}
-\label{fig:camera_calib}}
+}
 \qquad
 \subfloat[input image]{
 \includegraphics[width=0.4\textwidth]{calibration2.jpg}
-\label{fig:input}}
+}
 \qquad
 \subfloat[undistored image]{
 \includegraphics[width=0.4\textwidth]{undist_calibration2.jpg}
-\label{fig:camera_calib}}
+}
 \caption{Camera calibration}
+\label{fig:camera_calib}
 \end{figure}
 
 The undisorted images for all the twenty images provided in the  camera\_cal folder can be found in  camera\_cal/calib\_result folder.
@@ -82,7 +83,7 @@ Take the input image Fig \ref{fig:input} as an example, the whole piple line con
 		\begin{enumerate}
 			\item {Lane pixel identifcation} When processing an individual image or the first frame of a video, the approach based on histogram provided in the class material is applied. First the left and right starting points are selected based on the maximum column sum of the left half and right half of the binary image. Then for left and right lane, we search along the y direction for the non-zero pixels around the current columns. And the staring points are updated based on the mean position of the non-zero pixels that have been found. This is coded in the function PolyFitter.find\_lane\_pixels. When processing videos, the lane pixels are searched along the polynomial curves obtained from the previous frame. The code for this in the function PolyFitter.search\_around\_poly.
 			
-			\item \textbf {Poly fit.} Having obtained the lane pixels, numpy.polyfit is applied to fit a quadratic curve.
+			\item \textbf {Poly fit.} Having obtained the lane pixels, numpy.polyfit is applied to fit a quadratic curve. Here an important approach is to maintain the "consistency" between two consequtive frames. If the current fit is too different, then current fit is ignored. Otherwise, a weighted average of the previous and current fit is computed as the latest polynomial fit. The code for this in PolyFitter.update\_fit.
 		\end{enumerate}
 	The fitted polynomial curves are given in the image \ref{fig:polyfit}.
 	
@@ -126,31 +127,14 @@ Take the input image Fig \ref{fig:input} as an example, the whole piple line con
 \caption{Lane detection pipeline}
 \end{figure}
 
-\section{Full extent of lane lines}
-This section explains the last step of the pipeline. This in turn contains two steps. 
+\section{Resuls on video}
+The pipeline described above works well on project\_video.mp4. The result is ld\_project\_video.mp4 in the github.
 
-\subsection{Grouping line segments into left and right}
-In the second last step, a set of line segments are obtained by Hough transform. These line segments are grouped into left and right lines respectively, based on the slopes. The line segments with negative slopes are put into the left group, while the line segments with the positive slopes are put into the right group. In implementation, to filter out some noisy line segments, only the line segments whose slopes are within the given slope ranges are considered, while the other line segments are ignored. The slope ranges are parameters need to be tuned. And there is one slope range for the left group and the right group respectively.
-
-\subsection{Forming the full lane lines}
-Having obtained left and right groups of line segments, we need to form one line from each group. Two approaches have been tried.
-
-\subsubsection{Avearing the line segments in one group}
-For each group of line segments, this approach simply builds the full extent line by averaging the slopes and interceptions of the line segments in the group. This approach works in most cases. However it is not robust since it can be eaily disturbed by some nosisy slope or interception values. For example, if some line segments' slopse or/and interceptions are far away from the ground true, even those short segments are located within the true lane lines, averaging can still result in the slopes/interceptions that are quite different from those of the true land lines. This problem can be alleviated by fine tuning the parameters, but I am trying to find some better approaches.
-
-\subsubsection{Robust line fitting with RANSAC}
-The above approach is not robust since averaging slopes and interceptions can be easily disturbed by outlier segments even when those outliers are located within the true lane lines.
-
-Based on the above observation, instead of computing the slopes and interceptions by averaing, I turn to fit one line robustly for each group, left and right respectively. So for each group, we just need to fine one line that are close to the end points of the line segments in the group. This can overcome the problem in the averaging approach: as long as the line segments are within the true lane lines, this can produce the ideal result even when the slopes/interceptions of those segments are quite different from those of the true lane lines. For the nosity line segments that are located far away from the lane lines, RANSAC algorithm can ignore them automatically.
-
-This approach works very well on the test videos. It gives good estimation in almost all the frames.
+I also tested the pipeline on chanllenge\_video.mp5. It also works although there are some small wobbles.
 
 
-
-\section{Problems and possible improvements}
-The above pipeline works pretty well on the given test images and test videos. However, it breaks on some parts of the challenging video, challenge.mp4. The reason is that in the chanllenge.mp4, there are some strong edges: the car itself and the color change of the road. A failure example is shown in Fig \ref{fig:failure}. 
-
-I tried to fine tunning the parameters for color detection, since the pixles around those edges are neither white nor yellow. However, mannully tunning the parameters can be suffering. It may improve the results on some particular frames while break the results on some other frames. Probably a more principaled way like building a trained model which considers both color and edge information can get a better result.
+\section{Discussion}
+The above pipeline works well on project\_video.mp4 and chanllenge\_video.mp5. In order to overcome the drastic changes in the curve fitting, which leads to failure of the lane detection, I maintain the consistency of the cure fit between two consecutive frames. This can smooth the estimation and prevent the fitted curve from changing drastically. However, this cannot work in harder\_challenge\_video.mp4 because the lane curves change much more than the other two videos. So a better trade off and a better fusion of the vairous information (colore, gradient, cure fit, etc) to detect lane pixels are needed. 
 
 
 \end{document}

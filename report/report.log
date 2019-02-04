@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2019.1.15)  3 FEB 2019 22:30
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2019.1.15)  3 FEB 2019 22:45
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -96,26 +96,7 @@ Package caption Info: float package is loaded.
 \c@lotdepth=\count96
 \sf@top=\skip46
 \sf@bottom=\skip47
-) (./report.aux
-
-LaTeX Warning: Label `fig:input' multiply defined.
-
-
-LaTeX Warning: Label `sub@fig:input' multiply defined.
-
-
-LaTeX Warning: Label `fig:camera_calib' multiply defined.
-
-
-LaTeX Warning: Label `sub@fig:camera_calib' multiply defined.
-
-
-LaTeX Warning: Label `fig:input' multiply defined.
-
-
-LaTeX Warning: Label `sub@fig:input' multiply defined.
-
-)
+) (./report.aux)
 \openout1 = `report.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 13.
@@ -130,7 +111,7 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 13.
 LaTeX Font Info:    ... okay on input line 13.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 13.
 LaTeX Font Info:    ... okay on input line 13.
- (/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
+(/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count97
 \scratchdimen=\dimen113
@@ -205,9 +186,6 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <6> on input line 21.
 
-
-LaTeX Warning: Reference `camera_calib' on page 1 undefined on input line 27.
-
 <calibration1.jpg, id=1, 1284.8pt x 722.7pt>
 File: calibration1.jpg Graphic file (type jpg)
  <use calibration1.jpg>
@@ -239,91 +217,83 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-Overfull \hbox (4.0954pt too wide) in paragraph at lines 64--65
+Overfull \hbox (4.0954pt too wide) in paragraph at lines 65--66
 \OT1/cmr/m/n/12 scale im-age. And then the So-bel op-er-a-tor is ap-plied to th
 e grayscale
  []
 
 [2 <./calibration1.jpg> <./undist_calibration1.jpg> <./calibration2.jpg> <./und
 ist_calibration2.jpg>]
-Overfull \hbox (18.6424pt too wide) in paragraph at lines 75--76
+Overfull \hbox (18.6424pt too wide) in paragraph at lines 76--77
 \OT1/cmr/m/n/12 are ob-tained by ap-ply-ing the func-tion $\OML/cmm/m/it/12 cv\
 OT1/cmr/m/n/12 2\OML/cmm/m/it/12 :getPerspectiveTransform$\OT1/cmr/m/n/12 .
  []
 
-[3]
-
-LaTeX Warning: Reference `fig:lane' on page 4 undefined on input line 97.
-
-<test5.jpg, id=21, 1284.8pt x 722.7pt>
+[3] <test5.jpg, id=21, 1284.8pt x 722.7pt>
 File: test5.jpg Graphic file (type jpg)
  <use test5.jpg>
-Package pdftex.def Info: test5.jpg used on input line 105.
+Package pdftex.def Info: test5.jpg used on input line 106.
 (pdftex.def)             Requested size: 155.99762pt x 87.7458pt.
 
 <undist_test5.jpg, id=22, 925.056pt x 520.344pt>
 File: undist_test5.jpg Graphic file (type jpg)
  <use undist_test5.jpg>
-Package pdftex.def Info: undist_test5.jpg used on input line 109.
+Package pdftex.def Info: undist_test5.jpg used on input line 110.
 (pdftex.def)             Requested size: 155.99762pt x 87.74272pt.
 
 <bin_test5.jpg, id=23, 1284.8pt x 722.7pt>
 File: bin_test5.jpg Graphic file (type jpg)
  <use bin_test5.jpg>
-Package pdftex.def Info: bin_test5.jpg used on input line 113.
+Package pdftex.def Info: bin_test5.jpg used on input line 114.
 (pdftex.def)             Requested size: 155.99762pt x 87.7458pt.
 
 <warp_test5.jpg, id=24, 1284.8pt x 722.7pt>
 File: warp_test5.jpg Graphic file (type jpg)
  <use warp_test5.jpg>
-Package pdftex.def Info: warp_test5.jpg used on input line 117.
+Package pdftex.def Info: warp_test5.jpg used on input line 118.
 (pdftex.def)             Requested size: 155.99762pt x 87.7458pt.
 
 <fit_test5.jpg, id=25, 925.056pt x 520.344pt>
 File: fit_test5.jpg Graphic file (type jpg)
  <use fit_test5.jpg>
-Package pdftex.def Info: fit_test5.jpg used on input line 121.
+Package pdftex.def Info: fit_test5.jpg used on input line 122.
 (pdftex.def)             Requested size: 155.99762pt x 87.74272pt.
 
 <lane_test5.jpg, id=26, 925.056pt x 520.344pt>
 File: lane_test5.jpg Graphic file (type jpg)
  <use lane_test5.jpg>
-Package pdftex.def Info: lane_test5.jpg used on input line 125.
+Package pdftex.def Info: lane_test5.jpg used on input line 126.
 (pdftex.def)             Requested size: 155.99762pt x 87.74272pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[4] [5 <./test5.jpg> <./undist_test5.jpg> <./bin_test5.jpg> <./warp_test5.jpg> 
-<./fit_test5.jpg> <./lane_test5.jpg>]
+[4]
+Overfull \hbox (7.57669pt too wide) in paragraph at lines 137--138
+\OT1/cmr/m/n/12 The above pipeline works well on project[]video.mp4 and chan-l-
+lenge[]video.mp5.
+ []
 
-LaTeX Warning: Reference `fig:failure' on page 6 undefined on input line 151.
-
-[6] [7] (./report.aux)
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: There were multiply-defined labels.
-
- ) 
+[5 <./test5.jpg> <./undist_test5.jpg> <./bin_test5.jpg> <./warp_test5.jpg> <./f
+it_test5.jpg> <./lane_test5.jpg>] [6] (./report.aux) ) 
 Here is how much of TeX's memory you used:
- 2821 strings out of 494910
- 44789 string characters out of 6179836
- 105189 words of memory out of 5000000
- 6100 multiletter control sequences out of 15000+600000
- 8808 words of font info for 31 fonts, out of 8000000 for 9000
+ 2817 strings out of 494910
+ 44723 string characters out of 6179836
+ 104167 words of memory out of 5000000
+ 6096 multiletter control sequences out of 15000+600000
+ 8501 words of font info for 30 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
  44i,9n,49p,812b,354s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/shar
-e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texli
-ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texm
-f-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb>
-Output written on report.pdf (7 pages, 2188577 bytes).
+</usr/share/texlive/texmf
+-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texlive/texmf-dist/fonts/
+type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/p
+ublic/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/a
+msfonts/cm/cmr17.pfb>
+Output written on report.pdf (6 pages, 2185860 bytes).
 PDF statistics:
- 58 PDF objects out of 1000 (max. 8388607)
- 33 compressed objects within 1 object stream
+ 53 PDF objects out of 1000 (max. 8388607)
+ 29 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  51 words of extra memory for PDF output out of 10000 (max. 10000000)
 
