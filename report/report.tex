@@ -56,46 +56,47 @@ In my code, LaneDetector is the class for performing lane detection. The code is
 Take the input image Fig \ref{fig:input} as an example, the whole piple line consists of the following steps:
 
 \begin{enumerate}
-	\item \textbf{Loading pre-computed parameters.} First, an object of the LandDetectParam class is created. And this object contains all the parameters needed for the whole lane detection pipeline. In particular, it will load the pre-calculated paramters for camera calibration and perspective transform. The code for this part is in py/lane\_detect\_param.py
+	\item \textbf{Loading pre-computed parameters.} First, an object of the LandDetectParam class is created. And this object contains all the parameters needed for the whole lane detection pipeline. In particular, it will load the pre-calculated paramters for camera calibration and perspective transform. The parameters are stored in the file lane\_detect\_param.pkl. The code for this part is in py/lane\_detect\_param.py
 	 
 	\item \textbf{Distortion correction.} Using the pre-calculated camera calibration parameters mentioned in the last section, the first step is to apply $cv2.undistort$ to the input image to get the undistorted image. The undistorted result for \ref{fig:input} is given in \ref{fig:undistort}
 
-	\item  \textbf{Binary thresholding}  BinaryThresholder is the class for this step. The code is in py/binar\_thresholding.py. Following the class, this done by combining the result from gradient and color transformation.
+	\item  \textbf{Binary thresholding}  BinaryThresholder is the class for this step. The code is in py/binar\_thresholding.py. Following the class materials, this done by combining the result from gradient and color transformation.
 		\begin{enumerate}
-			\item \textbf{Sobel gradient} The input image is first transformed to a gray scale image. And then the Sobel operator is applied to the grayscale image to obtain the gradient image. Then based on the gradient strengh in x and y directions, the magnitude and the direction of the gradient at each pixel, binary thresholding is performed.
+			\item \textbf{Sobel gradient} The input image is first transformed to a gray scale image. Then the Sobel operator is applied to the gray scale image to obtain the gradient image. Then based on the gradient strengh in x and y directions, the magnitude and the direction of the gradient at each pixel, binary thresholding is performed.
 
 			\item  \textbf{S space} The input image is transformed into HLS space first. Then binary thresholding is performed based on the S-space value.
-			\item \textbf{Combination} The two binary images are combined by OR operation. In addition, the pixels whose S-space value is lower than a threshold are filtered out.
+			\item \textbf{Combination} The two binary images obtained from the last two steps are combined by OR operation. In addition, the pixels whose S-space value is lower than a threshold are filtered out. 
 			
-			\item \textbf{RGB filtering} If the image obtained in the last step still have many pixeld obtained (more than 40\%), then the pixels whose RGB value is lower than a threshold are filtered out.
+			\item \textbf{RGB filtering} If the image obtained in the last step still have many pixels  (more than 40\%), then the pixels whose RGB value is lower than a threshold are further filtered out. This step is helpful to remove some edges caused by shadows.
+			
 		\end{enumerate}
 	The binarization example is given in \ref{fig:binarization}
 	
 	\item \textbf{Perspective transform.} 
 		\begin{enumerate}
-			\item \textbf{Pre-calculation.} Parameters for perspective transform are pre-calcuated. The code is in py/camera\_calibration.py. For source points and destinations points are selected manually. Then the matrices for both perspective and inverse perspective transform are obtained by applying the function $cv2.getPerspectiveTransform$. This is done by applying $cv2.warpPerspective$ function.
+			\item \textbf{Pre-calculation.} Parameters for perspective transform are pre-calcuated. The code is in py/camera\_calibration.py. Four source points and destinations points are selected manually. Then the matrices for both perspective and inverse perspective transform are obtained by applying the function $cv2.getPerspectiveTransform$. This is done by applying $cv2.warpPerspective$ function.
 			
 			\item \textbf{Perspective transform.} The function $cv2.warpPerspective$ is applied to the binary image obtained in the binary thresholding step.
 		\end{enumerate}
 	The wapred image is given in \ref{fig:warped}.
 	
-	\item \textbf{Polynomial fit.} Having obtained the warped image in the last step, PolyFitter is the class for identifying lane pixels and curve fitting. The code is in py/ply\_fitter.py. There are two sub steps:
+	\item \textbf{Polynomial fit.} Having obtained the warped image in the last step, PolyFitter is the class for identifying lane pixels and curve fitting. The code is in py/poly\_fitter.py. There are two sub steps:
 		\begin{enumerate}
-			\item {Lane pixel identifcation} When processing an individual image or the first frame of a video, the approach based on histogram provided in the class material is applied. First the left and right starting points are selected based on the maximum column sum of the left half and right half of the binary image. Then for left and right lane, we search along the y direction for the non-zero pixels around the current columns. And the staring points are updated based on the mean position of the non-zero pixels that have been found. This is coded in the function PolyFitter.find\_lane\_pixels. When processing videos, the lane pixels are searched along the polynomial curves obtained from the previous frame. The code for this in the function PolyFitter.search\_around\_poly.
+			\item \textbf{Lane pixel identifcation} When processing an individual image or the first frame of a video, the approach based on histogram provided in the class material is applied. First the left and right starting points are selected based on the maximum column sum of the left half and right half of the binary image. Then for the left and the right lanes, we search along the y direction for the non-zero pixels around the current columns. And the staring points are updated based on the mean position of the non-zero pixels that have been found. This is coded in the function PolyFitter.find\_lane\_pixels. When processing videos, the lane pixels are searched along the polynomial curves obtained from the previous frame. The code for this in the function PolyFitter.search\_around\_poly.
 			
-			\item \textbf {Poly fit.} Having obtained the lane pixels, numpy.polyfit is applied to fit a quadratic curve. Here an important approach is to maintain the "consistency" between two consequtive frames. If the current fit is too different, then current fit is ignored. Otherwise, a weighted average of the previous and current fit is computed as the latest polynomial fit. The code for this in PolyFitter.update\_fit.
+			\item \textbf {Poly fit.} Having obtained the lane pixels, numpy.polyfit is applied to fit a quadratic curve. Here an important approach is to enforce the \textbf{consistency} between two consequtive frames. If the current fit is too different from the previous frame, then current fit is ignored. Otherwise, a weighted average of the previous and current fit is computed as the latest polynomial fit. The code for this in PolyFitter.update\_fit.
 		\end{enumerate}
 	The fitted polynomial curves are given in the image \ref{fig:polyfit}.
 	
 	
 	\item \textbf{Calculate radius of curvature and the position of the vehicle.} 
 		\begin{enumerate}
-			\item \textbf{Computing the radius of curature.} The radius of curvature of left and right lanes can be calculated once we have the parmaters of the fitted polynomial curves. But here the curves are fitted by the salced the coordinates of the lane pixels. The funtion is PolyFitter.meansure\_curvature\_real. Then the mean of these two radius of curvature is returned as the raidus of curvature of the road. 
+			\item \textbf{Computing the radius of curature.} The radius of curvature of the left and the right lanes can be calculated once we have the parmaters of the fitted polynomial curves. But here the curves are fitted by the salced the coordinates of the lane pixels. The funtion is PolyFitter.meansure\_curvature\_real. The mean of these two radius of curvature is returned as the raidus of curvature of the road. 
 			
-			\item textbuf{Computing the position of the vehicle.} Based on the two fitted polynomail curves, we can get the x coordinates of the two points corresponding to the maximum y value of the image. Then the mean value of these two x coordinates is the estimation of the vehicle's position. Note that here we need to scale the result to reflect the real distance rather than the number of pixels. The code is given in LaneDetector.compute\_vehicle\_pos.
+			\item \textbf{Computing the position of the vehicle.} Based on the two fitted polynomail curves, we can get the x coordinates of the two points corresponding to the maximum y value of the image. Then the mean value of these two x coordinates is the estimation of the vehicle's position. Note that here we need to scale the result to reflect the real distance rather than the number of pixels. The code is given in LaneDetector.compute\_vehicle\_pos.
 		\end{enumerate}
 	
-	\item \textbf{Render lane image}. Having obtained all the information in the previous steps, I render the lane image by filling the regions surronded by the lane points. An example of the lane image is given in \ref{fig:lane}.
+	\item \textbf{Render the lane image}. Having obtained all the information in the previous steps, the lane image can be rendered by filling the regions surronded by the lane points. An example of the lane image is given in \ref{fig:lane}.
 			
 \end{enumerate}
 
@@ -130,11 +131,13 @@ Take the input image Fig \ref{fig:input} as an example, the whole piple line con
 \section{Resuls on video}
 The pipeline described above works well on project\_video.mp4. The result is ld\_project\_video.mp4 in the github.
 
-I also tested the pipeline on chanllenge\_video.mp5. It also works although there are some small wobbles.
+The pipeline is also tested on chanllenge\_video.mp4. It also works although there are some small wobbles. The result is ld\_challenge\_video.mp4.
 
 
 \section{Discussion}
-The above pipeline works well on project\_video.mp4 and chanllenge\_video.mp5. In order to overcome the drastic changes in the curve fitting, which leads to failure of the lane detection, I maintain the consistency of the cure fit between two consecutive frames. This can smooth the estimation and prevent the fitted curve from changing drastically. However, this cannot work in harder\_challenge\_video.mp4 because the lane curves change much more than the other two videos. So a better trade off and a better fusion of the vairous information (colore, gradient, cure fit, etc) to detect lane pixels are needed. 
+The above pipeline works well on project\_video.mp4 and chanllenge\_video.mp4. In order to overcome the drastic changes in the curve fitting between two consecutive frames, which can lead to the failure of the lane detection, I enforce the consistency of the cure fit between two consecutive frames. This can smooth the estimation and prevent the fitted curve from changing drastically. 
+
+However, this cannot work in harder\_challenge\_video.mp4 because the lane curves change much more than the other two videos. So a better trade off and a better fusion of the vairous information (colore, gradient, cure fit, etc) to detect lane pixels are needed. 
 
 
 \end{document}
