@@ -34,7 +34,7 @@ def test_lane_detect(input_path):
     for fname in images:        
         img = mpimg.imread(fname)    
         file_name = fname.split('/')[-1].split('.')[0].strip() + '.jpg'
-        
+            
         # lane detection and intermediate results
         print(file_name)
         if param.debug:
@@ -90,6 +90,6 @@ def save_frames(input_video, T1, T2):
 
 if __name__ == '__main__':
     path = 'frames'
-    #test_lane_detect(path)
-    test_video('../challenge_video.mp4')
-    #save_frames('../challenge_video.mp4', 0, 8)
+    test_lane_detect(path)
+    #test_video('../harder_challenge_video.mp4')
+    #save_frames('../harder_challenge_video.mp4', 0, 4)

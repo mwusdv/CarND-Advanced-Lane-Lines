@@ -33,7 +33,7 @@ class LaneDetectParam:
         self.inv_warp_mtx = None
         
         # binarization based on gradient
-        self.sobel_kernel_size = 9
+        self.sobel_kernel_size = 7
         self.sobel_gradx_thresh = (20, 100)
         self.sobel_grady_thresh = (20, 100)
         self.sobel_mag_thresh = (20, 100)
@@ -41,13 +41,7 @@ class LaneDetectParam:
         
         # binary thresholding based on s-channel
         self.s_channel_thresh = (100, 255)
-        self.s_channel_lb = 5
-        
-        # for color detection
-        self.yellow_hsv_lb = yellow_hsv_lb
-        self.yellow_hsv_ub = yellow_hsv_ub
-        
-        self.white_rgb_threshold = white_rgb_threshold
+        self.s_channel_lb = 10
         
         # for convolution
         self.conv_window_width = 50

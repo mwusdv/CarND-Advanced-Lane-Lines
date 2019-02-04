@@ -142,7 +142,7 @@ class PolyFitter:
             self._right_fit = right_fit
             self._left_fit_real = left_fit_real
             self._right_fit_real = right_fit_real
-            
+              
     # Fit poly curve given the possible lane pixels
     def fit_polynomial(self, binary_warped):
         # Find our lane pixels first
@@ -179,10 +179,18 @@ class PolyFitter:
         py = np.array(self._ploty, dtype=np.int32)  
         
         lx = np.array(self._left_fitx + 0.5, dtype=np.int32) # add 0.5 in order to cast to integer more accurately
-        self._left_pts = np.vstack([lx, py]).T  
+        left_pts = np.vstack([lx, py]).T  
+        
+        # only keep the non-negative points
+        idx = lx >= 0
+        self._left_pts = left_pts[idx, :]
         
         rx = np.array(self._right_fitx + 0.5, dtype=np.int32)
-        self._right_pts = np.vstack([rx, py]).T
+        right_pts = np.vstack([rx, py]).T
+        
+        # only keep the non-negative points
+        idx = rx >= 0
+        self._right_pts = right_pts[idx, :]
         
         # Create an output image to draw on and visualize the result
         if self._param.debug:
