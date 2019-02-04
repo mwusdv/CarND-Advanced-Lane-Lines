@@ -16,7 +16,7 @@
 
 
 \section{Camera Calibration}
-Camera clibaration is done by following the materials taught in the class. Twenty chess board images are provided in the camera\_cal folder. 
+The colde for this step is in py/camera\_calibration.py. Camera clibaration is done by following the materials taught in the class. Twenty chess board images are provided in the camera\_cal folder. 
 \begin{enumerate}
 	\item For each image, find the inner corners by $cv2.findChessboardCorners$. For this function the number of corners in x and y direstions are 9 and 6 respectively.
 	\item Append the corners found in the previous step to an array $imgpoints$, at the same time append pre-calculated mesh grid points to another array $objp$
@@ -50,28 +50,52 @@ The undisorted images for all the twenty images provided in the  camera\_cal fol
   
     
 \section{Pipline}
-In my code, py/lane\_detector.py is the class for performing lane detection. Within this class, the member function lane\_detect describes the whole pipeline.
+In my code, LaneDetector is the class for performing lane detection. The code is in py/lane\_detector.py. Within this class, the member function LaneDetector.lane\_detect describes the whole pipeline.
 
 Take the input image Fig \ref{fig:input} as an example, the whole piple line consists of the following steps:
 
 \begin{enumerate}
+	\item \textbf{Loading pre-computed parameters.} First, an object of the LandDetectParam class is created. And this object contains all the parameters needed for the whole lane detection pipeline. In particular, it will load the pre-calculated paramters for camera calibration and perspective transform. The code for this part is in py/lane\_detect\_param.py
+	 
 	\item \textbf{Distortion correction.} Using the pre-calculated camera calibration parameters mentioned in the last section, the first step is to apply $cv2.undistort$ to the input image to get the undistorted image. The undistorted result for \ref{fig:input} is given in \ref{fig:undistort}
 
-	\item  \textbf{Binary thresholding} This is 
-
+	\item  \textbf{Binary thresholding}  BinaryThresholder is the class for this step. The code is in py/binar\_thresholding.py. Following the class, this done by combining the result from gradient and color transformation.
 		\begin{enumerate}
-			\item \textbf{Color mask.} Similarly to what was taught in the class, A color mask is built to mark the interest areas based on the colors. First the yellow areas are detected based on a given HSV range. Then the white areas are detected based on both RGB and HSV ranges. And a bit OR is performed to produce the combined color mask. The yellow mask, white mask and the color mask are shown in Fig. \ref{fig:yellow_mask}, Fig. \ref{fig:white_mask} and Fig. \ref{fig:color_mask} respectively. Note that the white mask this example is not accurate, since I use a relaxed range parameters for color detection. This is to retain engouh edge pixles later in all kinds of light/color conditions.
+			\item \textbf{Sobel gradient} The input image is first transformed to a gray scale image. And then the Sobel operator is applied to the grayscale image to obtain the gradient image. Then based on the gradient strengh in x and y directions, the magnitude and the direction of the gradient at each pixel, binary thresholding is performed.
 
-			\item  \textbf{Interest region mask.} A trapzoid shape region at the bottom of the image is marked as the interest region mask. An interest region mask is shown in Fig \ref{fig:region_mask}.
+			\item  \textbf{S space} The input image is transformed into HLS space first. Then binary thresholding is performed based on the S-space value.
+			\item \textbf{Combination} The two binary images are combined by OR operation. In addition, the pixels whose S-space value is lower than a threshold are filtered out.
+			
+			\item \textbf{RGB filtering} If the image obtained in the last step still have many pixeld obtained (more than 40\%), then the pixels whose RGB value is lower than a threshold are filtered out.
 		\end{enumerate}
-
-	\item \textbf{Edge image.} As suggested in the class, a Gaussian smoothing is performed, followed by the Canny edge detection operator. This step results in a edge image, which gives the pixels which have strong intensity gradients. An edge image is shown in Fig \ref{fig:edge}.
+	The binarization example is given in \ref{fig:binarization}
 	
-	\item \textbf{Masked edge image.} The edge image and the candiate region mask are combined by performing the bit AND operation, which produces a masked edge image. A masked edge image is shown in Fig \ref{fig:masked_edge}.
+	\item \textbf{Perspective transform.} 
+		\begin{enumerate}
+			\item \textbf{Pre-calculation.} Parameters for perspective transform are pre-calcuated. The code is in py/camera\_calibration.py. For source points and destinations points are selected manually. Then the matrices for both perspective and inverse perspective transform are obtained by applying the function $cv2.getPerspectiveTransform$. This is done by applying $cv2.warpPerspective$ function.
+			
+			\item \textbf{Perspective transform.} The function $cv2.warpPerspective$ is applied to the binary image obtained in the binary thresholding step.
+		\end{enumerate}
+	The wapred image is given in \ref{fig:warped}.
 	
-	\item \textbf{Lane line segments.} Following the class, Hough transform is peformed upon the masked edge image obtained in the last step. This can detect the lane segments, which is requested in the first task of this project. The detected lane line segments are shown in Fig \ref{fig:line_segment}. The input image combine with the line segments is shown in Fig \ref{fig:combined_line_segment}.
+	\item \textbf{Polynomial fit.} Having obtained the warped image in the last step, PolyFitter is the class for identifying lane pixels and curve fitting. The code is in py/ply\_fitter.py. There are two sub steps:
+		\begin{enumerate}
+			\item {Lane pixel identifcation} When processing an individual image or the first frame of a video, the approach based on histogram provided in the class material is applied. First the left and right starting points are selected based on the maximum column sum of the left half and right half of the binary image. Then for left and right lane, we search along the y direction for the non-zero pixels around the current columns. And the staring points are updated based on the mean position of the non-zero pixels that have been found. This is coded in the function PolyFitter.find\_lane\_pixels. When processing videos, the lane pixels are searched along the polynomial curves obtained from the previous frame. The code for this in the function PolyFitter.search\_around\_poly.
+			
+			\item \textbf {Poly fit.} Having obtained the lane pixels, numpy.polyfit is applied to fit a quadratic curve.
+		\end{enumerate}
+	The fitted polynomial curves are given in the image \ref{fig:polyfit}.
 	
-	\item \textbf{Full extent of lane lines.} To accomplish the second task of this project, we need to combine the line segments into two full extent lane lines, the left line and right line. The details of this step will be explained in the next section. The constructed full lines are shown in Fig \ref{fig:full_line}. The input image combined with detected full extent of lane lines is shown in Fig \ref{fig:combined_full_line}.
+	
+	\item \textbf{Calculate radius of curvature and the position of the vehicle.} 
+		\begin{enumerate}
+			\item \textbf{Computing the radius of curature.} The radius of curvature of left and right lanes can be calculated once we have the parmaters of the fitted polynomial curves. But here the curves are fitted by the salced the coordinates of the lane pixels. The funtion is PolyFitter.meansure\_curvature\_real. Then the mean of these two radius of curvature is returned as the raidus of curvature of the road. 
+			
+			\item textbuf{Computing the position of the vehicle.} Based on the two fitted polynomail curves, we can get the x coordinates of the two points corresponding to the maximum y value of the image. Then the mean value of these two x coordinates is the estimation of the vehicle's position. Note that here we need to scale the result to reflect the real distance rather than the number of pixels. The code is given in LaneDetector.compute\_vehicle\_pos.
+		\end{enumerate}
+	
+	\item \textbf{Render lane image}. Having obtained all the information in the previous steps, I render the lane image by filling the regions surronded by the lane points. An example of the lane image is given in \ref{fig:lane}.
+			
 \end{enumerate}
 
 \begin{figure}[h]
@@ -83,6 +107,22 @@ Take the input image Fig \ref{fig:input} as an example, the whole piple line con
 \subfloat[undistorted image]{
 \includegraphics[width=0.4\textwidth]{undist_test5.jpg}
 \label{fig:undistort}}
+\qquad
+\subfloat[binary image]{
+\includegraphics[width=0.4\textwidth]{bin_test5.jpg}
+\label{fig:binarization}}
+\qquad
+\subfloat[warped image]{
+\includegraphics[width=0.4\textwidth]{warp_test5.jpg}
+\label{fig:warped}}
+\qquad
+\subfloat[poly image]{
+\includegraphics[width=0.4\textwidth]{fit_test5.jpg}
+\label{fig:polyfit}}
+\qquad
+\subfloat[lane image]{
+\includegraphics[width=0.4\textwidth]{lane_test5.jpg}
+\label{fig:lane}}
 \caption{Lane detection pipeline}
 \end{figure}
 

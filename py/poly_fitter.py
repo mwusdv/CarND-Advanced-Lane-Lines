@@ -212,6 +212,6 @@ class PolyFitter:
         y_eval = np.max(self._ploty)
         
         # calculation of R_curve (radius of curvature)
-        self._left_curverad = compute_curvature(self._left_fit, y_eval*self._param.ym_per_pix)
-        self._right_curverad = compute_curvature(self._right_fit, y_eval*self._param.ym_per_pix)
+        self._left_curverad = compute_curvature(self._left_fit_real, y_eval*self._param.ym_per_pix)
+        self._right_curverad = compute_curvature(self._right_fit_real, y_eval*self._param.ym_per_pix)
          
