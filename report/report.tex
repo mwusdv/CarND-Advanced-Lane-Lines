@@ -128,7 +128,11 @@ Take the input image Fig \ref{fig:input} as an example, the whole piple line con
 \caption{Lane detection pipeline}
 \end{figure}
 
-\section{Resuls on video}
+\section{Resuls}
+\subsection{Results on test images}
+The lane detection results for the images in the folder test\_images are given in the folder output\_images. Each test image has 5 result images: undistortion, binary thresholding, warp, poly fit and lane detection. The title of the 5 images start with undist, bin, warp, fit and lane respectively.
+
+\subsection{Results on videos}
 The pipeline described above works well on project\_video.mp4. The result is ld\_project\_video.mp4 in the github.
 
 The pipeline is also tested on chanllenge\_video.mp4. It also works although there are some small wobbles. The result is ld\_challenge\_video.mp4.
